@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/limeridge_site_v7.html",
+      "destination": "/",
+      "permanent": true
+    }
+  ]
+}
