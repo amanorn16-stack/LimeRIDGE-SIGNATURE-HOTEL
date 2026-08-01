@@ -906,6 +906,80 @@
     .floating-actions{ right:16px; bottom:max(16px, env(safe-area-inset-bottom)); gap:12px; }
     .fab{ width:50px; height:50px; }
   }
+
+  /* ---- Cross-device refinements ---- */
+  :focus-visible{
+    outline:3px solid rgba(242,169,0,.9);
+    outline-offset:3px;
+  }
+  button, .btn, .filter-pill.clickable, .guest-summary, .fab, .payment-method-row{
+    -webkit-tap-highlight-color:transparent;
+  }
+  button, .btn, .cal-nav-btn, .stepper-ctrl button, .copy-btn, .pay-btn{
+    min-height:44px;
+  }
+  .navbar{
+    min-height:64px;
+    gap:16px;
+  }
+  .hero{
+    max-width:1000px;
+    margin:0 auto;
+    padding:clamp(32px, 6vw, 64px) clamp(16px, 4vw, 40px) 0;
+  }
+  .hero h1{
+    font-size:clamp(28px, 5vw, 46px);
+    line-height:1.1;
+    text-wrap:balance;
+  }
+  .hero p{
+    max-width:620px;
+    margin-inline:auto;
+    line-height:1.55;
+  }
+  .search-card{ scroll-margin-top:84px; }
+  .search-field:focus-within{ background:#fffaf4; }
+  .search-field input:focus, .search-field select:focus{ outline:none; }
+  .search-field input:focus-visible, .search-field select:focus-visible{ outline:3px solid rgba(242,169,0,.9); outline-offset:3px; }
+  .room-card, .contact-card, .search-card, .modal{ box-shadow:0 8px 30px rgba(0,0,0,.08); }
+  .room-photo-img{ transition:transform .25s ease; }
+  .room-card:hover .room-photo-img{ transform:scale(1.025); }
+  .room-foot{ gap:16px; }
+  @media (max-width:800px){
+    .search-row{ grid-template-columns:1fr 1fr; }
+    .search-cta{ grid-column:1 / -1; padding-top:8px; }
+    .search-cta .btn{ width:100%; }
+  }
+  @media (max-width:560px){
+    .navbar{ padding:12px 16px; }
+    .navbar .util{ gap:8px; }
+    .navbar .util a.cta{ min-height:44px; display:inline-flex; align-items:center; padding:8px 14px; }
+    .text-logo .tl-lime, .text-logo .tl-ridge{ font-size:18px; }
+    .hero{ padding-top:32px; }
+    .hero .eyebrow{ font-size:10px; letter-spacing:2px; }
+    .search-card{ margin-top:22px; margin-inline:12px; border-radius:10px; }
+    .search-row{ grid-template-columns:1fr; }
+    .search-field{ padding:14px 16px; }
+    .search-cta{ grid-column:auto; padding:12px 16px 16px; }
+    .calendar-panel{ position:fixed; left:12px; right:12px; top:50%; transform:translateY(-50%); width:auto; max-height:82dvh; }
+    .calendar-panel .cal-month{ min-width:210px; }
+    .guest-panel{ position:fixed; left:12px; right:12px; bottom:max(12px, env(safe-area-inset-bottom)); top:auto; width:auto; }
+    .room-body{ padding:18px; }
+    .room-foot{ align-items:flex-start; flex-direction:column; }
+    .room-foot-right{ width:100%; align-items:stretch; }
+    .room-foot-right .btn{ width:100%; }
+    .amenities-grid{ grid-template-columns:1fr; gap:14px; }
+    .contact-card{ padding:18px; }
+    .modal-overlay{ align-items:flex-end; padding:0; }
+    .modal{ max-width:none; max-height:92dvh; border-radius:16px 16px 0 0; padding:20px 16px max(20px, env(safe-area-inset-bottom)); }
+    .row2, .row3{ grid-template-columns:1fr; }
+    .payment-method-row{ padding:12px; min-height:52px; }
+    .pm-badge{ font-size:10px; padding:4px 7px; }
+    .floating-actions{ bottom:max(16px, env(safe-area-inset-bottom)); }
+  }
+  @media (prefers-reduced-motion:reduce){
+    *, *::before, *::after{ scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; }
+  }
 </style>
 </head>
 <body>
@@ -924,8 +998,8 @@
 
 <div class="hero">
   <div class="eyebrow">SIGNATURE HOTEL &middot; IKEJA GRA, LAGOS</div>
-  <h1>LimeRidge Signature Hotel &mdash; Your Hotel in Ikeja GRA, Lagos</h1>
-  <p>Minutes from Murtala Muhammed International Airport. Best rate guaranteed when you book direct.</p>
+  <h1>Stay Beautifully in Ikeja</h1>
+  <p>Discover considered comfort in Ikeja GRA, minutes from Murtala Muhammed International Airport.</p>
 </div>
 
 <div class="popup-backdrop" id="popupBackdrop" onclick="closeAllPopups()"></div>
