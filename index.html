@@ -1370,8 +1370,8 @@
   &copy; 2026 LimeRidge Signature Hotel. All rights reserved.
 </footer>
 
-<div class="modal-overlay" id="checkoutModal">
-  <div class="modal">
+<div class="modal-overlay" id="checkoutModal" onclick="closeCheckout()">
+  <div class="modal" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeCheckout()">&times;</button>
 
     <div id="bookingView">
@@ -1478,8 +1478,8 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="amenityModal">
-  <div class="modal" style="max-width:380px;">
+<div class="modal-overlay" id="amenityModal" onclick="closeAmenityModal()">
+  <div class="modal" style="max-width:380px;" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeAmenityModal()">&times;</button>
     <h2 id="amenityTitle">Amenity</h2>
     <img id="amenityImage" style="width:100%; border-radius:10px; margin-top:12px; display:none;">
