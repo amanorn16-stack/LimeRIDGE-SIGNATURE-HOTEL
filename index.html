@@ -134,10 +134,12 @@
   /* ---- Hero ---- */
   .hero{
     text-align:center;
-    padding:40px 20px 0;
+    padding:110px 20px 100px;
+    background:linear-gradient(180deg, rgba(20,16,14,0.58), rgba(20,16,14,0.68)), url('/images/hallway-art-gallery.jpg') center 35%/cover no-repeat;
+    background-color:#1d1a17;
   }
   .hero .eyebrow{
-    color:var(--maroon);
+    color:var(--gold);
     font-size:11px;
     letter-spacing:3px;
     font-weight:700;
@@ -146,12 +148,17 @@
     font-size:30px;
     margin-top:8px;
     font-weight:700;
-    color:var(--ink);
+    color:#fff;
+    text-shadow:0 2px 12px rgba(0,0,0,0.35);
   }
   .hero p{
-    color:var(--muted);
+    color:#f1ede6;
     font-size:14px;
     margin-top:8px;
+    text-shadow:0 1px 8px rgba(0,0,0,0.3);
+  }
+  @media(max-width:700px){
+    .hero{ padding:76px 20px 70px; }
   }
 
   /* ---- Search / Book card ---- */
