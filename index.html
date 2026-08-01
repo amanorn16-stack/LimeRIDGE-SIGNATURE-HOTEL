@@ -445,6 +445,40 @@
   .filter-pill.clickable:hover{ border-color:var(--maroon); background:#fbf3f4; }
   .amenity.clickable:hover{ color:var(--maroon); }
 
+  /* ---- Featured amenities ---- */
+  .filter-row{
+    max-width:1080px;
+    margin:24px auto 0;
+    padding:16px 20px;
+    justify-content:center;
+    gap:10px;
+    background:linear-gradient(135deg,#5c1a26 0%,#7a2333 58%,#934254 100%);
+    border:1px solid rgba(242,169,0,.55);
+    border-radius:12px;
+    box-shadow:0 14px 30px rgba(92,26,38,.2);
+  }
+  .filter-pill{
+    min-height:42px;
+    padding:10px 14px;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:7px;
+    color:#fff;
+    font-weight:700;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.14);
+    transition:transform .18s ease,background .18s ease,border-color .18s ease;
+  }
+  .filter-pill.clickable:hover, .filter-pill.clickable:focus-visible{
+    background:#f2a900;
+    border-color:#ffd166;
+    color:#311017;
+    transform:translateY(-2px);
+  }
+  @media(max-width:560px){
+    .filter-row{ margin:16px 12px 0; padding:12px; gap:8px; }
+    .filter-pill{ flex:1 1 calc(50% - 8px); justify-content:center; padding:9px 8px; font-size:10.5px; }
+  }
+
   /* ---- Sections ---- */
   section{
     max-width:1000px;
