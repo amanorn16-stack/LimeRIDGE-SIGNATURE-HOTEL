@@ -196,6 +196,37 @@ module.exports = async (req, res) => {
       return;
     }
 
+    if (action === 'backfill-index' && req.method === 'GET') {
+      // One-time maintenance action: scans for booking:* records created
+      // before the all-bookings index existed and adds them to it, so
+      // "All Bookings" / "Today" reflect historical data too. Safe to
+      // re-run any time -- ZADD on an existing member just updates score.
+      const keysRes = await redisPipeline(redisConfig, [['KEYS', 'booking:*']]);
+      const keys = (keysRes[0] && keysRes[0].result) || [];
+      if (keys.length === 0) {
+        res.status(200).json({ success: true, scanned: 0, indexed: 0 });
+        return;
+      }
+      const getCommands = keys.map(k => ['GET', k]);
+      const getResults = await redisPipeline(redisConfig, getCommands);
+      const addCommands = [];
+      let indexed = 0;
+      getResults.forEach((r, i) => {
+        if (!r || !r.result) return;
+        let record;
+        try { record = JSON.parse(r.result); } catch (e) { return; }
+        if (!record || !record.reference) return;
+        const ts = record.recordedAt ? Math.floor(new Date(record.recordedAt).getTime() / 1000) : Math.floor(Date.now() / 1000);
+        addCommands.push(['ZADD', 'all-bookings', ts, record.reference]);
+        indexed++;
+      });
+      if (addCommands.length > 0) {
+        await redisPipeline(redisConfig, addCommands);
+      }
+      res.status(200).json({ success: true, scanned: keys.length, indexed });
+      return;
+    }
+
     if (action === 'confirm' && req.method === 'POST') {
       const body = await readBody(req);
       const reference = body && body.reference;
@@ -259,7 +290,7 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(400).json({ success: false, message: 'Unknown action. Use list, list-all, today, grid (GET), confirm or cancel (POST).' });
+    res.status(400).json({ success: false, message: 'Unknown action. Use list, list-all, today, grid, backfill-index (GET), confirm or cancel (POST).' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Admin action failed', detail: String(err) });
   }
