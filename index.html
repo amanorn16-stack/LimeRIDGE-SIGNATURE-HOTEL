@@ -15,17 +15,19 @@
 <meta property="og:title" content="LimeRidge Signature Hotel | Hotel in Ikeja GRA, Lagos Near the Airport">
 <meta property="og:description" content="A hotel in Ikeja GRA, Lagos, minutes from Murtala Muhammed International Airport. Book direct for the best rate — pool, breakfast, airport pickup, 24-hour power and on-site restaurant.">
 <meta property="og:url" content="https://limeridge-signaturehotel.com/">
-<meta property="og:image" content="https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/images/pool.jpg">
+<meta property="og:image" content="images/pool.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="LimeRidge Signature Hotel | Hotel in Ikeja GRA, Lagos Near the Airport">
 <meta name="twitter:description" content="A hotel in Ikeja GRA, Lagos, minutes from Murtala Muhammed International Airport. Book direct for the best rate.">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/images/pool.jpg">
+<meta name="twitter:image" content="images/pool.jpg">
 <meta name="geo.region" content="NG-LA">
 <meta name="geo.placename" content="Ikeja GRA, Lagos">
 <meta name="geo.position" content="6.5745;3.3532">
 <meta name="ICBM" content="6.5745, 3.3532">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script src="https://checkout.flutterwave.com/v3.js"></script>
 <script type="application/ld+json">
@@ -37,7 +39,7 @@
   "url": "https://limeridge-signaturehotel.com/",
   "telephone": "+2349028309397",
   "priceRange": "₦145,000 - ₦550,000",
-  "image": "https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/images/pool.jpg",
+  "image": "images/pool.jpg",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "30 Ladoke Akintola Rd, Ikeja GRA",
@@ -906,6 +908,92 @@
     .floating-actions{ right:16px; bottom:max(16px, env(safe-area-inset-bottom)); gap:12px; }
     .fab{ width:50px; height:50px; }
   }
+
+  /* ---- Visual refresh ---- */
+  :root{ --maroon:#6d2635; --maroon-dark:#471721; --gold:#c79b4b; --ink:#172321; --page-bg:#f7f5f0; --card:#fffdf9; --line:#e5dfd4; }
+  body{ background:var(--page-bg); line-height:1.45; }
+  .navbar{ background:rgba(255,253,249,.96); backdrop-filter:blur(12px); padding:12px max(28px, env(safe-area-inset-right)); box-shadow:0 1px 0 rgba(23,35,33,.06); }
+  .navbar .util a.cta{ border-radius:4px; padding:10px 18px; letter-spacing:.03em; box-shadow:0 5px 14px rgba(109,38,53,.18); }
+  .hero{ min-height:420px; padding:0 20px; display:flex; align-items:center; text-align:left; color:#fff; position:relative; overflow:hidden; background:linear-gradient(90deg,rgba(16,31,29,.84) 0%,rgba(16,31,29,.54) 48%,rgba(16,31,29,.18) 100%),url('images/pool.jpg') center 51%/cover; }
+  .hero::after{ content:''; position:absolute; inset:auto -12% -160px auto; width:440px; height:440px; border:1px solid rgba(255,255,255,.22); border-radius:50%; }
+  .hero-content{ width:min(100%,1000px); margin:0 auto; position:relative; z-index:1; padding:48px 0 76px; }
+  .hero .eyebrow{ color:#eadbb8; letter-spacing:.2em; font-size:10px; }
+  .hero h1{ color:#fff; font-family:Georgia,'Times New Roman',serif; font-size:clamp(38px,5vw,62px); line-height:1.04; max-width:620px; margin-top:16px; letter-spacing:-.045em; }
+  .hero p{ color:rgba(255,255,255,.86); font-size:16px; max-width:510px; line-height:1.65; margin-top:18px; }
+  .hero-link{ display:inline-flex; align-items:center; gap:12px; margin-top:25px; color:#fff; text-transform:uppercase; letter-spacing:.12em; font-size:11px; font-weight:700; border-bottom:1px solid #cda957; padding-bottom:7px; }
+  .hero-link span{ color:#e5c777; font-size:18px; line-height:0; }
+  .search-card{ position:relative; z-index:2; margin:-48px auto 0; border-radius:6px; box-shadow:0 18px 45px rgba(21,32,30,.16); }
+  .search-field{ padding:17px 22px; }
+  .search-cta{ background:#fbf8f1; }
+  .btn{ border-radius:4px; letter-spacing:.02em; transition:transform .2s ease, background .2s ease, box-shadow .2s ease; }
+  .btn:hover{ transform:translateY(-1px); box-shadow:0 7px 16px rgba(77,27,38,.18); }
+  .filter-row{ margin-top:20px; justify-content:center; }
+  .filter-pill{ background:transparent; border:none; padding:5px 7px; color:#5d645f; font-size:11.5px; }
+  section{ padding-top:62px; padding-bottom:20px; }
+  section .section-head{ border-bottom:none; margin-bottom:25px; padding-bottom:0; }
+  section .section-head h2{ font-family:Georgia,'Times New Roman',serif; font-size:28px; font-weight:400; letter-spacing:-.025em; }
+  section .section-head h2::after{ content:''; display:block; width:38px; height:2px; background:var(--gold); margin-top:10px; }
+  .room-card{ grid-template-columns:390px 1fr; border-radius:6px; margin-bottom:24px; border-color:#e7e0d5; box-shadow:0 7px 19px rgba(30,39,35,.045); transition:transform .2s ease, box-shadow .2s ease; }
+  .room-card:hover{ transform:translateY(-3px); box-shadow:0 14px 28px rgba(30,39,35,.1); }
+  .room-photo{ aspect-ratio:auto; min-height:265px; background:#ddd; overflow:hidden; }
+  .room-photo img{ width:100%; height:100%; position:absolute; inset:0; object-fit:cover; transition:transform .5s ease; }
+  .room-card:hover .room-photo img{ transform:scale(1.04); }
+  .room-body{ padding:27px 30px 21px; }
+  .room-body h3{ font-family:Georgia,'Times New Roman',serif; font-size:25px; font-weight:400; margin-bottom:4px; }
+  .room-body .tags{ color:#8b7860; text-transform:uppercase; letter-spacing:.07em; font-size:10.5px; }
+  .room-body p.desc{ max-width:500px; line-height:1.65; }
+  .room-body .details-link{ color:var(--maroon); margin-top:4px; }
+  .room-foot{ margin-top:18px; }
+  .room-foot .price .amt{ font-family:Georgia,'Times New Roman',serif; font-size:24px; font-weight:400; }
+  .amenities-grid{ background:#fffdf9; padding:27px; border:1px solid #e7e0d5; border-radius:6px; gap:21px 24px; }
+  .amenity{ font-size:13px; font-weight:600; }
+  .amenity .ico{ background:#f4ede1; color:var(--maroon); border-radius:50%; width:32px; height:32px; display:grid; place-items:center; font-size:14px; }
+  .info-grid,.location-wrap,.contact-grid{ background:#fffdf9; border:1px solid #e7e0d5; border-radius:6px; padding:28px; }
+  .info-grid{ gap:45px; }
+  .location-wrap,.contact-grid{ gap:28px; }
+  .contact-card{ border:0; padding:0; background:transparent; }
+  .map-placeholder{ border-radius:4px; }
+  .qr-section{ padding-bottom:62px; }
+  footer{ background:#172321; color:#d5d2c9; }
+  @media(max-width:750px){ .hero{ min-height:400px; } .room-card{ grid-template-columns:1fr; } .room-photo{ min-height:250px; } .info-grid,.location-wrap,.contact-grid{ padding:22px; } }
+  @media(max-width:560px){ .hero{ min-height:370px; background-position:60% center; } .hero-content{ padding-top:36px; padding-bottom:68px; } .search-card{ margin-left:16px; margin-right:16px; } .filter-row{ justify-content:flex-start; padding-left:16px; } .room-body{ padding:23px 20px 18px; } .room-foot{ gap:16px; } .room-foot .btn{ padding:11px 18px; } }
+
+  /* Cross-device interaction and accessibility refinements */
+  :focus-visible{ outline:3px solid rgba(199,155,75,.95); outline-offset:3px; }
+  button, .btn, .guest-summary, .fab, .payment-method-row{ -webkit-tap-highlight-color:transparent; }
+  button, .btn, .cal-nav-btn, .stepper-ctrl button, .copy-btn, .pay-btn{ min-height:44px; }
+  .search-card{ scroll-margin-top:84px; }
+  .search-field:focus-within{ background:#fffaf4; }
+  .search-field input:focus, .search-field select:focus{ outline:none; }
+  .search-field input:focus-visible, .search-field select:focus-visible{ outline:3px solid rgba(199,155,75,.95); outline-offset:3px; }
+  @media(max-width:800px){
+    .search-row{ grid-template-columns:1fr 1fr; }
+    .search-cta{ grid-column:1 / -1; padding-top:8px; }
+    .search-cta .btn{ width:100%; }
+  }
+  @media(max-width:560px){
+    .navbar{ min-height:64px; gap:8px; padding:12px 16px; }
+    .navbar .util{ gap:8px; }
+    .navbar .util a.cta{ min-height:44px; display:inline-flex; align-items:center; padding:8px 14px; }
+    .hero h1{ font-size:clamp(38px,11vw,50px); text-wrap:balance; }
+    .search-card{ margin-top:-32px; margin-inline:12px; }
+    .search-row{ grid-template-columns:1fr; }
+    .search-field{ padding:14px 16px; }
+    .search-cta{ grid-column:auto; padding:12px 16px 16px; }
+    .calendar-panel{ position:fixed; left:12px; right:12px; top:50%; transform:translateY(-50%); width:auto; max-height:82dvh; }
+    .calendar-panel .cal-month{ min-width:210px; }
+    .guest-panel{ position:fixed; left:12px; right:12px; bottom:max(12px, env(safe-area-inset-bottom)); top:auto; width:auto; }
+    .room-foot{ align-items:flex-start; flex-direction:column; }
+    .room-foot-right{ width:100%; align-items:stretch; }
+    .room-foot-right .btn{ width:100%; }
+    .amenities-grid{ grid-template-columns:1fr; gap:14px; }
+    .modal-overlay{ align-items:flex-end; padding:0; }
+    .modal{ max-width:none; max-height:92dvh; border-radius:16px 16px 0 0; padding:20px 16px max(20px, env(safe-area-inset-bottom)); }
+    .row2, .row3{ grid-template-columns:1fr; }
+    .payment-method-row{ min-height:52px; padding:12px; }
+  }
+  @media(prefers-reduced-motion:reduce){ *,*::before,*::after{ scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; } }
+
 </style>
 </head>
 <body>
@@ -923,9 +1011,12 @@
 </div>
 
 <div class="hero">
-  <div class="eyebrow">SIGNATURE HOTEL &middot; IKEJA GRA, LAGOS</div>
-  <h1>LimeRidge Signature Hotel &mdash; Your Hotel in Ikeja GRA, Lagos</h1>
-  <p>Minutes from Murtala Muhammed International Airport. Best rate guaranteed when you book direct.</p>
+  <div class="hero-content">
+    <div class="eyebrow">LIMERIDGE SIGNATURE HOTEL &middot; LAGOS</div>
+    <h1>Stay beautifully in<br>Ikeja GRA.</h1>
+    <p>Thoughtful rooms, warm hospitality, and everything you need for an effortless Lagos stay.</p>
+    <a class="hero-link" href="#book">Plan your stay <span>&rarr;</span></a>
+  </div>
 </div>
 
 <div class="popup-backdrop" id="popupBackdrop" onclick="closeAllPopups()"></div>
@@ -1005,7 +1096,7 @@
 
   <div class="room-card" data-room="Classic">
     <div class="room-photo">
-      <img class="room-photo-img" src="https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/classic/PHOTO-2026-07-27-17-14-32%20(2).jpg" alt="Classic Room at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
+      <img class="room-photo-img" src="classic/PHOTO-2026-07-27-17-14-32%20(2).jpg" alt="Classic Room at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
       <div class="arrow left">&#10094;</div>
       <div class="arrow right">&#10095;</div>
       <div class="dots"><i class="active"></i><i></i><i></i><i></i></div>
@@ -1027,7 +1118,7 @@
 
   <div class="room-card" data-room="Executive">
     <div class="room-photo">
-      <img class="room-photo-img" src="https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/executive/PHOTO-2026-07-27-17-14-32%20(3).jpg" alt="Executive Room at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
+      <img class="room-photo-img" src="executive/PHOTO-2026-07-27-17-14-32%20(3).jpg" alt="Executive Room at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
       <div class="arrow left">&#10094;</div>
       <div class="arrow right">&#10095;</div>
       <div class="dots"><i class="active"></i><i></i><i></i><i></i></div>
@@ -1049,7 +1140,7 @@
 
   <div class="room-card" data-room="Superior">
     <div class="room-photo">
-      <img class="room-photo-img" src="https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/superior/PHOTO-2026-07-27-17-14-32%20(5).jpg" alt="Superior Room at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
+      <img class="room-photo-img" src="superior/PHOTO-2026-07-27-17-14-32%20(5).jpg" alt="Superior Room at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
       <div class="arrow left">&#10094;</div>
       <div class="arrow right">&#10095;</div>
       <div class="dots"><i class="active"></i><i></i><i></i><i></i></div>
@@ -1071,7 +1162,7 @@
 
   <div class="room-card" data-room="Executive Superior">
     <div class="room-photo">
-      <img class="room-photo-img" src="https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/executive%20superior/PHOTO-2026-07-27-17-14-32%20(4).jpg" alt="Executive Superior Room at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
+      <img class="room-photo-img" src="executive%20superior/PHOTO-2026-07-27-17-14-32%20(4).jpg" alt="Executive Superior Room at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
       <div class="arrow left">&#10094;</div>
       <div class="arrow right">&#10095;</div>
       <div class="dots"><i class="active"></i><i></i><i></i><i></i></div>
@@ -1093,7 +1184,7 @@
 
   <div class="room-card" data-room="Signature Suite">
     <div class="room-photo">
-      <img class="room-photo-img" src="https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/signature%20suite/PHOTO-2026-07-27-17-14-32.jpg" alt="Signature Suite at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
+      <img class="room-photo-img" src="signature%20suite/PHOTO-2026-07-27-17-14-32.jpg" alt="Signature Suite at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
       <div class="arrow left">&#10094;</div>
       <div class="arrow right">&#10095;</div>
       <div class="dots"><i class="active"></i><i></i><i></i><i></i></div>
@@ -1115,7 +1206,7 @@
 
   <div class="room-card" data-room="Apartment">
     <div class="room-photo">
-      <img class="room-photo-img" src="https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/apartment/PHOTO-2026-07-27-17-14-32%20(1).jpg" alt="Self-contained Apartment at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
+      <img class="room-photo-img" src="apartment/PHOTO-2026-07-27-17-14-32%20(1).jpg" alt="Self-contained Apartment at LimeRidge Signature Hotel, a hotel in Ikeja GRA, Lagos" loading="lazy">
       <div class="arrow left">&#10094;</div>
       <div class="arrow right">&#10095;</div>
       <div class="dots"><i class="active"></i><i></i><i></i><i></i></div>
@@ -1137,7 +1228,7 @@
 
   <div class="room-card" data-room="City View">
     <div class="room-photo">
-      <img class="room-photo-img" src="https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/city%20view/PHOTO-2026-07-28-07-47-46.jpg" alt="City View Room overlooking Lagos at LimeRidge Signature Hotel, Ikeja GRA" loading="lazy">
+      <img class="room-photo-img" src="city%20view/PHOTO-2026-07-28-07-47-46.jpg" alt="City View Room overlooking Lagos at LimeRidge Signature Hotel, Ikeja GRA" loading="lazy">
       <div class="arrow left">&#10094;</div>
       <div class="arrow right">&#10095;</div>
       <div class="dots"><i class="active"></i><i></i><i></i><i></i></div>
@@ -1934,7 +2025,7 @@
     pool: {
       title: "&#127946; Swimming Pool",
       desc: "Relax and unwind at our outdoor swimming pool, open daily from 7:00 AM to 6:00 PM. Poolside seating and towels are provided for all guests.",
-      image: "https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/images/pool.jpg"
+      image: "images/pool.jpg"
     },
     fitness: {
       title: "&#127940; Fitness Center",
@@ -1948,8 +2039,8 @@
       title: "&#127869; On-site Restaurant",
       desc: "Enjoy a variety of local and international dishes at our on-site restaurant, open 24 hours a day. Our front desk is also staffed around the clock to assist you.",
       images: [
-        "https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/images/restaurant1.jpg",
-        "https://raw.githubusercontent.com/amanorn16-stack/LimeRIDGE-SIGNATURE-HOTEL/main/images/restaurant2.jpg"
+        "images/restaurant1.jpg",
+        "images/restaurant2.jpg"
       ]
     }
   };
