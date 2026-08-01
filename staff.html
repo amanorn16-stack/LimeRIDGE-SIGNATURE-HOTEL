@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>LimeRidge — Staff Hub</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<style>
+  :root{ --maroon:#7a2333; --maroon-dark:#5c1a26; --green:#7cb342; --gold:#c79b4b; --ink:#1d1d1d; --muted:#6b6b6b; --line:#e4e2dd; --page-bg:#f4f4f2; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{ font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; background:var(--page-bg); color:var(--ink); padding:20px; }
+  h1{ font-size:19px; color:var(--maroon); margin-bottom:2px; }
+  .sub{ font-size:12.5px; color:var(--muted); margin-bottom:18px; }
+  .key-box{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px; max-width:420px; margin-bottom:20px; }
+  .key-box input{ width:100%; border:1px solid var(--line); border-radius:6px; padding:9px 10px; font-size:14px; margin-bottom:10px; }
+  .key-box button{ background:var(--maroon); color:#fff; border:none; border-radius:20px; padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer; }
+
+  .tabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; border-bottom:1px solid var(--line); padding-bottom:0; }
+  .tab-btn{ background:none; border:none; padding:10px 14px; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .tab-btn.active{ color:var(--maroon); border-bottom:2px solid var(--maroon); }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  .toolbar{ display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .toolbar button{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:7px 14px; font-size:12.5px; font-weight:600; cursor:pointer; color:var(--ink); }
+  .toolbar select{ border:1px solid var(--line); border-radius:16px; padding:7px 12px; font-size:12.5px; font-weight:600; background:#fff; color:var(--ink); }
+
+  table{ width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; border:1px solid var(--line); margin-bottom:10px; }
+  th, td{ text-align:left; padding:10px 12px; font-size:12.5px; border-bottom:1px solid var(--line); }
+  th{ background:#faf9f7; color:var(--muted); font-weight:700; text-transform:uppercase; font-size:10.5px; letter-spacing:0.5px; }
+  tr:last-child td{ border-bottom:none; }
+
+  .badge{ display:inline-block; border-radius:12px; padding:3px 10px; font-size:11px; font-weight:700; }
+  .badge.pending{ background:#fff4e0; color:#a06600; }
+  .badge.confirmed{ background:#eaf4e2; color:#4a7c2b; }
+  .badge.cancelled{ background:#f2f2f2; color:var(--muted); }
+  .badge.expired{ background:#f2f2f2; color:var(--muted); }
+
+  .row-actions{ display:flex; gap:6px; }
+  .row-actions button{ border:none; border-radius:14px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer; }
+  .btn-confirm{ background:var(--green); color:#fff; }
+  .btn-cancel{ background:#fff; color:#b23b3b; border:1px solid #e6b8b8 !important; }
+
+  .empty-note{ font-size:13px; color:var(--muted); padding:16px; background:#fff; border:1px solid var(--line); border-radius:10px; }
+  .status-msg{ font-size:12.5px; margin-bottom:12px; color:var(--muted); }
+
+  .cards-row{ display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+  .stat-card{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:14px 18px; min-width:120px; }
+  .stat-card .num{ font-size:22px; font-weight:800; color:var(--maroon); }
+  .stat-card .label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+
+  .section-title{ font-size:13px; font-weight:700; color:var(--ink); margin:18px 0 8px; }
+  .section-title:first-child{ margin-top:0; }
+
+  .grid-wrap{ overflow-x:auto; }
+  .grid-table td, .grid-table th{ text-align:center; white-space:nowrap; }
+  .grid-table td:first-child, .grid-table th:first-child{ text-align:left; }
+  .cell-full{ color:#b23b3b; font-weight:700; }
+  .cell-low{ color:#a06600; font-weight:700; }
+  .cell-ok{ color:#4a7c2b; }
+
+  .guest-cell{ line-height:1.4; }
+  .guest-cell .name{ font-weight:600; }
+  .guest-cell .contact{ color:var(--muted); font-size:11px; }
+</style>
+</head>
+<body>
+
+<h1>LimeRidge Staff Hub</h1>
+<div class="sub">Front desk view — today's arrivals/departures, all bookings, pending transfers, and room availability.</div>
+
+<div class="key-box" id="keyBox">
+  <div style="font-size:12.5px; font-weight:600; margin-bottom:8px;">Enter admin key</div>
+  <input type="password" id="adminKeyInput" placeholder="Admin key">
+  <button onclick="saveKey()">Open Staff Hub</button>
+</div>
+
+<div id="appArea" style="display:none;">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="today" onclick="switchTab('today')">Today</button>
+    <button class="tab-btn" data-tab="all" onclick="switchTab('all')">All Bookings</button>
+    <button class="tab-btn" data-tab="pending" onclick="switchTab('pending')">Pending Transfers</button>
+    <button class="tab-btn" data-tab="grid" onclick="switchTab('grid')">Availability Grid</button>
+    <button class="tab-btn" data-tab="" onclick="clearKey()" style="margin-left:auto; color:var(--muted);">Change key</button>
+  </div>
+
+  <!-- TODAY -->
+  <div class="tab-panel active" id="panel-today">
+    <div class="toolbar"><button onclick="loadToday()">Refresh</button></div>
+    <div class="status-msg" id="todayStatus"></div>
+    <div id="todayCards" class="cards-row"></div>
+    <div class="section-title">Arrivals</div>
+    <div id="arrivalsWrap"></div>
+    <div class="section-title">Departures</div>
+    <div id="departuresWrap"></div>
+    <div class="section-title">In-house tonight</div>
+    <div id="inhouseWrap"></div>
+  </div>
+
+  <!-- ALL BOOKINGS -->
+  <div class="tab-panel" id="panel-all">
+    <div class="toolbar">
+      <button onclick="loadAll()">Refresh</button>
+      <select id="allStatusFilter" onchange="renderAll()">
+        <option value="">All statuses</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="pending">Pending</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+    <div class="status-msg" id="allStatus"></div>
+    <div id="allWrap"></div>
+  </div>
+
+  <!-- PENDING TRANSFERS -->
+  <div class="tab-panel" id="panel-pending">
+    <div class="sub" style="margin-bottom:12px;">Confirm once you've verified the transfer, or cancel to release the room right away. Unconfirmed holds auto-release after their expiry time regardless.</div>
+    <div class="toolbar"><button onclick="loadPending()">Refresh</button></div>
+    <div class="status-msg" id="pendingStatus"></div>
+    <div id="pendingWrap"></div>
+  </div>
+
+  <!-- AVAILABILITY GRID -->
+  <div class="tab-panel" id="panel-grid">
+    <div class="toolbar">
+      <button onclick="loadGrid()">Refresh</button>
+      <select id="gridDays" onchange="loadGrid()">
+        <option value="7">Next 7 days</option>
+        <option value="14" selected>Next 14 days</option>
+        <option value="30">Next 30 days</option>
+      </select>
+    </div>
+    <div class="status-msg" id="gridStatus"></div>
+    <div class="grid-wrap" id="gridWrap"></div>
+  </div>
+</div>
+
+<script>
+  let ADMIN_KEY = localStorage.getItem('limeridge_admin_key') || '';
+  let allBookingsCache = [];
+
+  function saveKey(){
+    const val = document.getElementById('adminKeyInput').value.trim();
+    if(!val) return;
+    ADMIN_KEY = val;
+    localStorage.setItem('limeridge_admin_key', val);
+    showApp();
+  }
+
+  function clearKey(){
+    localStorage.removeItem('limeridge_admin_key');
+    ADMIN_KEY = '';
+    document.getElementById('keyBox').style.display = 'block';
+    document.getElementById('appArea').style.display = 'none';
+  }
+
+  function showApp(){
+    document.getElementById('keyBox').style.display = 'none';
+    document.getElementById('appArea').style.display = 'block';
+    loadToday();
+  }
+
+  function switchTab(tab){
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+    if(tab === 'today') loadToday();
+    if(tab === 'all') loadAll();
+    if(tab === 'pending') loadPending();
+    if(tab === 'grid') loadGrid();
+  }
+
+  function escapeHtml(str){
+    return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function fmtDate(iso){
+    if(!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+  }
+
+  function guestCell(b){
+    const contacts = [b.guestEmail, b.guestPhone].filter(Boolean).map(escapeHtml).join(' &middot; ');
+    return '<div class="guest-cell"><div class="name">' + (b.guestName ? escapeHtml(b.guestName) : '<span style="color:var(--muted)">&mdash;</span>') + '</div>' +
+      (contacts ? '<div class="contact">' + contacts + '</div>' : '') + '</div>';
+  }
+
+  async function apiGet(action, extra){
+    const res = await fetch('/api/admin?action=' + action + '&key=' + encodeURIComponent(ADMIN_KEY) + (extra || ''));
+    if(res.status === 401){
+      throw new Error('Admin key rejected. Click "Change key" and try again.');
+    }
+    return res.json();
+  }
+
+  // ---------- TODAY ----------
+  async function loadToday(){
+    const statusEl = document.getElementById('todayStatus');
+    statusEl.textContent = 'Loading…';
+    try{
+      const data = await apiGet('today');
+      statusEl.textContent = 'As of ' + data.date;
+      document.getElementById('todayCards').innerHTML =
+        statCard(data.arrivals.length, 'Arrivals') +
+        statCard(data.departures.length, 'Departures') +
+        statCard(data.inHouse.length, 'In-house');
+      document.getElementById('arrivalsWrap').innerHTML = bookingsTable(data.arrivals, 'No arrivals today.');
+      document.getElementById('departuresWrap').innerHTML = bookingsTable(data.departures, 'No departures today.');
+      document.getElementById('inhouseWrap').innerHTML = bookingsTable(data.inHouse, 'No guests in-house tonight.');
+    } catch(e){
+      statusEl.textContent = e.message || "Could not load today's bookings.";
+    }
+  }
+
+  function statCard(num, label){
+    return '<div class="stat-card"><div class="num">' + num + '</div><div class="label">' + label + '</div></div>';
+  }
+
+  function bookingsTable(bookings, emptyMsg){
+    if(!bookings || bookings.length === 0) return '<div class="empty-note">' + emptyMsg + '</div>';
+    const rows = bookings.map(b => '<tr>' +
+      '<td>' + escapeHtml(b.roomType) + '</td>' +
+      '<td>' + guestCell(b) + '</td>' +
+      '<td>' + escapeHtml(b.checkin) + ' &rarr; ' + escapeHtml(b.checkout) + '</td>' +
+      '<td>' + escapeHtml(b.reference) + '</td>' +
+      '<td><span class="badge ' + escapeHtml(b.status) + '">' + escapeHtml(b.status) + '</span></td>' +
+    '</tr>').join('');
+    return '<table><thead><tr><th>Room</th><th>Guest</th><th>Dates</th><th>Reference</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  // ---------- ALL BOOKINGS ----------
+  async function loadAll(){
+    const statusEl = document.getElementById('allStatus');
+    statusEl.textContent = 'Loading…';
+    try{
+      const data = await apiGet('list-all');
+      allBookingsCache = data.bookings || [];
+      statusEl.textContent = allBookingsCache.length + ' total bookings';
+      renderAll();
+    } catch(e){
+      statusEl.textContent = e.message || 'Could not load bookings.';
+    }
+  }
+
+  function renderAll(){
+    const filter = document.getElementById('allStatusFilter').value;
+    const list = filter ? allBookingsCache.filter(b => b.status === filter) : allBookingsCache;
+    document.getElementById('allWrap').innerHTML = bookingsTable(list, 'No bookings found.');
+  }
+
+  // ---------- PENDING TRANSFERS ----------
+  async function loadPending(){
+    const statusEl = document.getElementById('pendingStatus');
+    const wrap = document.getElementById('pendingWrap');
+    statusEl.textContent = 'Loading…';
+    try{
+      const data = await apiGet('list');
+      statusEl.textContent = '';
+      const bookings = (data.bookings || []).filter(b => b.status === 'pending');
+      if(bookings.length === 0){
+        wrap.innerHTML = '<div class="empty-note">No pending bank transfer bookings right now.</div>';
+        return;
+      }
+      const now = Date.now();
+      const rows = bookings.map(b => {
+        const expired = b.expiresAt && (b.expiresAt * 1000) < now;
+        return '<tr>' +
+          '<td>' + escapeHtml(b.roomType) + '</td>' +
+          '<td>' + guestCell(b) + '</td>' +
+          '<td>' + escapeHtml(b.checkin) + ' &rarr; ' + escapeHtml(b.checkout) + '</td>' +
+          '<td>' + escapeHtml(b.reference) + '</td>' +
+          '<td>' + fmtDate(b.recordedAt) + '</td>' +
+          '<td>' + fmtDate(b.expiresAt ? new Date(b.expiresAt * 1000).toISOString() : '') + '</td>' +
+          '<td><span class="badge ' + (expired ? 'expired' : 'pending') + '">' + (expired ? 'Expired' : 'Pending') + '</span></td>' +
+          '<td><div class="row-actions">' +
+            '<button class="btn-confirm" onclick="act(\'confirm\', \'' + b.reference + '\')">Confirm</button>' +
+            '<button class="btn-cancel" onclick="act(\'cancel\', \'' + b.reference + '\')">Cancel</button>' +
+          '</div></td>' +
+        '</tr>';
+      }).join('');
+      wrap.innerHTML = '<table><thead><tr><th>Room</th><th>Guest</th><th>Dates</th><th>Reference</th><th>Requested</th><th>Hold Expires</th><th>Status</th><th>Action</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    } catch(e){
+      statusEl.textContent = e.message || 'Could not load bookings.';
+    }
+  }
+
+  async function act(action, reference){
+    if(action === 'cancel' && !confirm('Release this room immediately?')) return;
+    try{
+      const res = await fetch('/api/admin?action=' + action + '&key=' + encodeURIComponent(ADMIN_KEY), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: reference })
+      });
+      const data = await res.json();
+      if(!data.success){
+        alert('Failed: ' + (data.message || 'Unknown error'));
+        return;
+      }
+      loadPending();
+    } catch(e){
+      alert('Request failed.');
+    }
+  }
+
+  // ---------- AVAILABILITY GRID ----------
+  async function loadGrid(){
+    const statusEl = document.getElementById('gridStatus');
+    const wrap = document.getElementById('gridWrap');
+    const days = document.getElementById('gridDays').value;
+    statusEl.textContent = 'Loading…';
+    try{
+      const data = await apiGet('grid', '&days=' + encodeURIComponent(days));
+      statusEl.textContent = '';
+      const dateList = data.days || [];
+      const grid = data.grid || {};
+      const headerCells = dateList.map(d => {
+        const short = new Date(d + 'T00:00:00Z').toLocaleDateString('en-US', { month:'short', day:'numeric', timeZone:'UTC' });
+        return '<th>' + short + '</th>';
+      }).join('');
+      const rows = Object.keys(grid).map(slug => {
+        const room = grid[slug];
+        const cells = dateList.map(d => {
+          const c = room.days[d];
+          const cls = c.remaining === 0 ? 'cell-full' : (c.remaining <= 2 ? 'cell-low' : 'cell-ok');
+          return '<td class="' + cls + '">' + c.remaining + '</td>';
+        }).join('');
+        return '<tr><td>' + escapeHtml(room.roomType) + ' <span style="color:var(--muted); font-weight:400;">(' + room.total + ')</span></td>' + cells + '</tr>';
+      }).join('');
+      wrap.innerHTML = '<table class="grid-table"><thead><tr><th>Room type (total)</th>' + headerCells + '</tr></thead><tbody>' + rows + '</tbody></table>';
+    } catch(e){
+      statusEl.textContent = e.message || 'Could not load availability grid.';
+    }
+  }
+
+  if(ADMIN_KEY){ showApp(); }
+</script>
+
+</body>
+</html>

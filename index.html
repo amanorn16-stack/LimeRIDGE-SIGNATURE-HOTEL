@@ -1992,7 +1992,10 @@
         checkin: document.getElementById('checkin').value,
         checkout: document.getElementById('checkout').value,
         reference: reference,
-        source: 'bank_transfer'
+        source: 'bank_transfer',
+        guestName: document.getElementById('guestName').value.trim(),
+        guestEmail: document.getElementById('guestEmail').value.trim(),
+        guestPhone: document.getElementById('guestPhone').value.trim()
       })
     }).then(function(r){ return r.json(); })
       .then(function(result){
