@@ -1,17 +1,39 @@
 // Vercel serverless function: /api/admin
 //
-// Lets hotel staff manage pending bank-transfer holds: list them, confirm
-// one (converts the temporary hold into a permanent booking once staff has
-// verified the transfer really came in), or cancel one (releases the room
-// immediately instead of waiting for it to auto-expire).
+// Lets hotel staff manage bookings and holds: list pending transfers,
+// confirm/cancel a pending hold, list every booking, see today's
+// check-ins/check-outs, and pull an availability grid.
 //
 // Protected by a shared secret. Requires an environment variable ADMIN_KEY
 // to be set on the Vercel project (Project Settings -> Environment Variables)
 // -- pick any private passphrase. Pass it as ?key=... or header x-admin-key.
 //
-// GET  /api/admin?action=list&key=...
+// GET  /api/admin?action=list&key=...              pending holds only
+// GET  /api/admin?action=list-all&key=...           every booking (confirmed+pending+cancelled)
+// GET  /api/admin?action=today&key=...              today's arrivals & departures (Africa/Lagos)
+// GET  /api/admin?action=grid&key=...&days=14       per-room-type remaining-inventory grid
 // POST /api/admin?action=confirm&key=...   body: { reference }
 // POST /api/admin?action=cancel&key=...    body: { reference }
+
+const ROOM_INVENTORY = {
+  'classic': 50,
+  'executive': 14,
+  'superior': 8,
+  'executive-superior': 15,
+  'signature-suite': 3,
+  'apartment': 4,
+  'city-view': 1
+};
+
+const ROOM_DISPLAY_NAMES = {
+  'classic': 'Classic',
+  'executive': 'Executive',
+  'superior': 'Superior',
+  'executive-superior': 'Executive Superior',
+  'signature-suite': 'Signature Suite',
+  'apartment': 'Apartment',
+  'city-view': 'City View'
+};
 
 function slugify(name) {
   return String(name).trim().toLowerCase().replace(/\s+/g, '-');
@@ -51,6 +73,13 @@ function datesBetween(startStr, endStr) {
   return dates;
 }
 
+// Today's date string (YYYY-MM-DD) in Africa/Lagos, which is UTC+1 with no DST.
+function lagosToday() {
+  const now = new Date();
+  const lagos = new Date(now.getTime() + 60 * 60 * 1000);
+  return lagos.toISOString().slice(0, 10);
+}
+
 async function readBody(req) {
   if (req.body) {
     if (typeof req.body === 'string') {
@@ -65,6 +94,18 @@ async function readBody(req) {
       try { resolve(JSON.parse(data || '{}')); } catch (e) { resolve({}); }
     });
   });
+}
+
+async function fetchBookingsByRefs(redisConfig, refs) {
+  if (refs.length === 0) return [];
+  const commands = refs.map(ref => ['GET', 'booking:' + ref]);
+  const results = await redisPipeline(redisConfig, commands);
+  return results
+    .map(r => {
+      if (!r || !r.result) return null;
+      try { return JSON.parse(r.result); } catch (e) { return null; }
+    })
+    .filter(Boolean);
 }
 
 module.exports = async (req, res) => {
@@ -93,19 +134,65 @@ module.exports = async (req, res) => {
     if (action === 'list' && req.method === 'GET') {
       const refsRes = await redisPipeline(redisConfig, [['ZREVRANGE', 'pending-bookings', 0, 199]]);
       const refs = (refsRes[0] && refsRes[0].result) || [];
-      if (refs.length === 0) {
-        res.status(200).json({ success: true, bookings: [] });
-        return;
-      }
-      const commands = refs.map(ref => ['GET', 'booking:' + ref]);
-      const results = await redisPipeline(redisConfig, commands);
-      const bookings = results
-        .map(r => {
-          if (!r || !r.result) return null;
-          try { return JSON.parse(r.result); } catch (e) { return null; }
-        })
-        .filter(Boolean);
+      const bookings = await fetchBookingsByRefs(redisConfig, refs);
       res.status(200).json({ success: true, bookings });
+      return;
+    }
+
+    if (action === 'list-all' && req.method === 'GET') {
+      const refsRes = await redisPipeline(redisConfig, [['ZREVRANGE', 'all-bookings', 0, 499]]);
+      const refs = (refsRes[0] && refsRes[0].result) || [];
+      const bookings = await fetchBookingsByRefs(redisConfig, refs);
+      res.status(200).json({ success: true, bookings });
+      return;
+    }
+
+    if (action === 'today' && req.method === 'GET') {
+      const refsRes = await redisPipeline(redisConfig, [['ZREVRANGE', 'all-bookings', 0, 999]]);
+      const refs = (refsRes[0] && refsRes[0].result) || [];
+      const bookings = await fetchBookingsByRefs(redisConfig, refs);
+      const today = lagosToday();
+      const active = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending');
+      const arrivals = active.filter(b => b.checkin === today);
+      const departures = active.filter(b => b.checkout === today);
+      const inHouse = active.filter(b => b.checkin <= today && b.checkout > today);
+      res.status(200).json({ success: true, date: today, arrivals, departures, inHouse });
+      return;
+    }
+
+    if (action === 'grid' && req.method === 'GET') {
+      const days = Math.min(Math.max(parseInt(params.get('days') || '14', 10) || 14, 1), 60);
+      const today = lagosToday();
+      const start = new Date(today + 'T00:00:00Z');
+      const dateList = [];
+      for (let i = 0; i < days; i++) {
+        const d = new Date(start);
+        d.setUTCDate(d.getUTCDate() + i);
+        dateList.push(d.toISOString().slice(0, 10));
+      }
+      const slugs = Object.keys(ROOM_INVENTORY);
+      const commands = [];
+      slugs.forEach(slug => {
+        dateList.forEach(d => {
+          commands.push(['GET', 'booked:' + slug + ':' + d]);
+          commands.push(['ZCOUNT', 'hold:' + slug + ':' + d, Math.floor(Date.now() / 1000), '+inf']);
+        });
+      });
+      const results = await redisPipeline(redisConfig, commands);
+      const grid = {};
+      let idx = 0;
+      slugs.forEach(slug => {
+        grid[slug] = { roomType: ROOM_DISPLAY_NAMES[slug] || slug, total: ROOM_INVENTORY[slug], days: {} };
+        dateList.forEach(d => {
+          const bookedRes = results[idx++];
+          const holdRes = results[idx++];
+          const booked = parseInt((bookedRes && bookedRes.result) || '0', 10) || 0;
+          const held = parseInt((holdRes && holdRes.result) || '0', 10) || 0;
+          const remaining = Math.max(ROOM_INVENTORY[slug] - booked - held, 0);
+          grid[slug].days[d] = { booked, held, remaining };
+        });
+      });
+      res.status(200).json({ success: true, days: dateList, grid });
       return;
     }
 
@@ -172,7 +259,7 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(400).json({ success: false, message: 'Unknown action. Use list (GET), confirm (POST) or cancel (POST).' });
+    res.status(400).json({ success: false, message: 'Unknown action. Use list, list-all, today, grid (GET), confirm or cancel (POST).' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Admin action failed', detail: String(err) });
   }

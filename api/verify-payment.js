@@ -5,13 +5,13 @@
 // Requires an environment variable PAYSTACK_SECRET_KEY to be set on the
 // Vercel project (Project Settings -> Environment Variables).
 
-async function recordBooking(roomType, checkin, checkout, reference, source, req) {
+async function recordBooking(roomType, checkin, checkout, reference, source, guest, req) {
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const host = req.headers.host;
   await fetch(proto + '://' + host + '/api/book', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ roomType, checkin, checkout, reference, source })
+    body: JSON.stringify({ roomType, checkin, checkout, reference, source, ...guest })
   });
 }
 
@@ -48,8 +48,14 @@ module.exports = async (req, res) => {
     if (data && data.status === true && data.data && data.data.status === 'success') {
       try {
         const meta = data.data.metadata || {};
+        const customer = data.data.customer || {};
         if (meta.room && meta.checkin && meta.checkout) {
-          await recordBooking(meta.room, meta.checkin, meta.checkout, data.data.reference, 'paystack', req);
+          const guest = {
+            guestName: meta.guest_name || '',
+            guestEmail: customer.email || data.data.customer_email || '',
+            guestPhone: meta.guest_phone || customer.phone || ''
+          };
+          await recordBooking(meta.room, meta.checkin, meta.checkout, data.data.reference, 'paystack', guest, req);
         }
       } catch (bookingErr) {
         // Never fail the payment confirmation because of an inventory-write hiccup.

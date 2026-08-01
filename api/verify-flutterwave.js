@@ -5,13 +5,13 @@
 // Requires an environment variable FLUTTERWAVE_SECRET_KEY to be set on the
 // Vercel project (Project Settings -> Environment Variables).
 
-async function recordBooking(roomType, checkin, checkout, reference, source, req) {
+async function recordBooking(roomType, checkin, checkout, reference, source, guest, req) {
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const host = req.headers.host;
   await fetch(proto + '://' + host + '/api/book', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ roomType, checkin, checkout, reference, source })
+    body: JSON.stringify({ roomType, checkin, checkout, reference, source, ...guest })
   });
 }
 
@@ -48,8 +48,14 @@ module.exports = async (req, res) => {
     if (data && data.status === 'success' && data.data && data.data.status === 'successful') {
       try {
         const meta = data.data.meta || data.data.meta_data || data.data.metadata || {};
+        const customer = data.data.customer || {};
         if (meta.room && meta.checkin && meta.checkout) {
-          await recordBooking(meta.room, meta.checkin, meta.checkout, data.data.tx_ref, 'flutterwave', req);
+          const guest = {
+            guestName: customer.name || meta.guest_name || '',
+            guestEmail: customer.email || '',
+            guestPhone: customer.phone_number || meta.guest_phone || ''
+          };
+          await recordBooking(meta.room, meta.checkin, meta.checkout, data.data.tx_ref, 'flutterwave', guest, req);
         }
       } catch (bookingErr) {
         console.error('Failed to record booking after Flutterwave payment:', bookingErr);

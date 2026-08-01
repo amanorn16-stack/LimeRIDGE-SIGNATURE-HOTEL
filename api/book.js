@@ -13,12 +13,14 @@
 //     it into a permanent booking). This stops a no-show or fake "I've Paid"
 //     click from blocking the room forever.
 //
-// POST body: { roomType, checkin, checkout, reference, source }
+// POST body: { roomType, checkin, checkout, reference, source, guestName, guestEmail, guestPhone }
 //   roomType  - display name, e.g. "Executive Superior" (matches room cards)
 //   checkin   - YYYY-MM-DD
 //   checkout  - YYYY-MM-DD
 //   reference - unique booking/payment reference (for the audit record)
 //   source    - "paystack" | "flutterwave" | "bank_transfer"
+//   guestName, guestEmail, guestPhone - optional guest contact info, stored
+//     on the booking record so staff can identify who a booking belongs to.
 
 const ROOM_INVENTORY = {
   'classic': 50,
@@ -105,7 +107,7 @@ module.exports = async (req, res) => {
   }
 
   const body = await readBody(req);
-  const { roomType, checkin, checkout, reference, source } = body || {};
+  const { roomType, checkin, checkout, reference, source, guestName, guestEmail, guestPhone } = body || {};
 
   if (!roomType || !checkin || !checkout) {
     res.status(400).json({ success: false, message: 'roomType, checkin and checkout are required' });
@@ -128,6 +130,11 @@ module.exports = async (req, res) => {
   const ref = reference || (slug + ':' + Date.now());
   const isVerifiedPayment = source === 'paystack' || source === 'flutterwave';
   const now = Math.floor(Date.now() / 1000);
+  const guest = {
+    guestName: guestName || '',
+    guestEmail: guestEmail || '',
+    guestPhone: guestPhone || ''
+  };
 
   try {
     const commands = [];
@@ -135,7 +142,7 @@ module.exports = async (req, res) => {
     if (isVerifiedPayment) {
       nights.forEach(d => commands.push(['INCR', 'booked:' + slug + ':' + d]));
       const bookingRecord = {
-        roomType, checkin, checkout, reference: ref, source,
+        roomType, checkin, checkout, reference: ref, source, ...guest,
         status: 'confirmed', recordedAt: new Date().toISOString()
       };
       commands.push(['SET', 'booking:' + ref, JSON.stringify(bookingRecord)]);
@@ -144,11 +151,15 @@ module.exports = async (req, res) => {
       nights.forEach(d => commands.push(['ZADD', 'hold:' + slug + ':' + d, expiresAt, ref]));
       commands.push(['ZADD', 'pending-bookings', now, ref]);
       const bookingRecord = {
-        roomType, checkin, checkout, reference: ref, source: source || 'bank_transfer',
+        roomType, checkin, checkout, reference: ref, source: source || 'bank_transfer', ...guest,
         status: 'pending', recordedAt: new Date().toISOString(), expiresAt
       };
       commands.push(['SET', 'booking:' + ref, JSON.stringify(bookingRecord)]);
     }
+
+    // Global index of every booking (confirmed + pending) so staff tooling
+    // can list/search all bookings without scanning every date key.
+    commands.push(['ZADD', 'all-bookings', now, ref]);
 
     await redisPipeline(redisConfig, commands);
 
