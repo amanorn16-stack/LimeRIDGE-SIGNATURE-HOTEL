@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>LimeRidge — Pending Bookings</title>
+<style>
+  :root{ --maroon:#7a2333; --maroon-dark:#5c1a26; --green:#7cb342; --ink:#1d1d1d; --muted:#6b6b6b; --line:#e4e2dd; --page-bg:#f4f4f2; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{ font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; background:var(--page-bg); color:var(--ink); padding:20px; }
+  h1{ font-size:18px; color:var(--maroon); margin-bottom:4px; }
+  .sub{ font-size:12.5px; color:var(--muted); margin-bottom:20px; }
+  .key-box{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px; max-width:420px; margin-bottom:20px; }
+  .key-box input{ width:100%; border:1px solid var(--line); border-radius:6px; padding:9px 10px; font-size:14px; margin-bottom:10px; }
+  .key-box button{ background:var(--maroon); color:#fff; border:none; border-radius:20px; padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer; }
+  .toolbar{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .toolbar button{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:7px 14px; font-size:12.5px; font-weight:600; cursor:pointer; color:var(--ink); }
+  table{ width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; border:1px solid var(--line); }
+  th, td{ text-align:left; padding:10px 12px; font-size:12.5px; border-bottom:1px solid var(--line); }
+  th{ background:#faf9f7; color:var(--muted); font-weight:700; text-transform:uppercase; font-size:10.5px; letter-spacing:0.5px; }
+  tr:last-child td{ border-bottom:none; }
+  .badge{ display:inline-block; border-radius:12px; padding:3px 10px; font-size:11px; font-weight:700; }
+  .badge.pending{ background:#fff4e0; color:#a06600; }
+  .badge.expired{ background:#f2f2f2; color:var(--muted); }
+  .row-actions{ display:flex; gap:6px; }
+  .row-actions button{ border:none; border-radius:14px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer; }
+  .btn-confirm{ background:var(--green); color:#fff; }
+  .btn-cancel{ background:#fff; color:#b23b3b; border:1px solid #e6b8b8 !important; }
+  .empty-note{ font-size:13px; color:var(--muted); padding:16px; background:#fff; border:1px solid var(--line); border-radius:10px; }
+  .status-msg{ font-size:12.5px; margin-bottom:12px; }
+</style>
+</head>
+<body>
+
+<h1>Pending Bank Transfer Bookings</h1>
+<div class="sub">Confirm once you've verified the transfer, or cancel to release the room right away. Unconfirmed holds auto-release after their expiry time regardless.</div>
+
+<div class="key-box" id="keyBox">
+  <div style="font-size:12.5px; font-weight:600; margin-bottom:8px;">Enter admin key</div>
+  <input type="password" id="adminKeyInput" placeholder="Admin key">
+  <button onclick="saveKey()">Load Pending Bookings</button>
+</div>
+
+<div id="appArea" style="display:none;">
+  <div class="toolbar">
+    <button onclick="loadBookings()">Refresh</button>
+    <button onclick="clearKey()">Change key</button>
+  </div>
+  <div id="statusMsg" class="status-msg"></div>
+  <div id="tableWrap"></div>
+</div>
+
+<script>
+  let ADMIN_KEY = localStorage.getItem('limeridge_admin_key') || '';
+
+  function saveKey(){
+    const val = document.getElementById('adminKeyInput').value.trim();
+    if(!val) return;
+    ADMIN_KEY = val;
+    localStorage.setItem('limeridge_admin_key', val);
+    showApp();
+  }
+
+  function clearKey(){
+    localStorage.removeItem('limeridge_admin_key');
+    ADMIN_KEY = '';
+    document.getElementById('keyBox').style.display = 'block';
+    document.getElementById('appArea').style.display = 'none';
+  }
+
+  function showApp(){
+    document.getElementById('keyBox').style.display = 'none';
+    document.getElementById('appArea').style.display = 'block';
+    loadBookings();
+  }
+
+  function fmtDate(iso){
+    if(!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+  }
+
+  async function loadBookings(){
+    const statusEl = document.getElementById('statusMsg');
+    const wrap = document.getElementById('tableWrap');
+    statusEl.textContent = 'Loading…';
+    try{
+      const res = await fetch('/api/admin?action=list&key=' + encodeURIComponent(ADMIN_KEY));
+      if(res.status === 401){
+        statusEl.textContent = 'Admin key rejected. Click "Change key" and try again.';
+        wrap.innerHTML = '';
+        return;
+      }
+      const data = await res.json();
+      statusEl.textContent = '';
+      const bookings = (data.bookings || []).filter(b => b.status === 'pending');
+      if(bookings.length === 0){
+        wrap.innerHTML = '<div class="empty-note">No pending bank transfer bookings right now.</div>';
+        return;
+      }
+      const now = Date.now();
+      const rows = bookings.map(b => {
+        const expired = b.expiresAt && (b.expiresAt * 1000) < now;
+        return '<tr>' +
+          '<td>' + escapeHtml(b.roomType) + '</td>' +
+          '<td>' + escapeHtml(b.checkin) + ' → ' + escapeHtml(b.checkout) + '</td>' +
+          '<td>' + escapeHtml(b.reference) + '</td>' +
+          '<td>' + fmtDate(b.recordedAt) + '</td>' +
+          '<td>' + fmtDate(b.expiresAt ? new Date(b.expiresAt * 1000).toISOString() : '') + '</td>' +
+          '<td><span class="badge ' + (expired ? 'expired' : 'pending') + '">' + (expired ? 'Expired' : 'Pending') + '</span></td>' +
+          '<td><div class="row-actions">' +
+            '<button class="btn-confirm" onclick="act(\'confirm\', \'' + b.reference + '\')">Confirm</button>' +
+            '<button class="btn-cancel" onclick="act(\'cancel\', \'' + b.reference + '\')">Cancel</button>' +
+          '</div></td>' +
+        '</tr>';
+      }).join('');
+      wrap.innerHTML = '<table><thead><tr><th>Room</th><th>Dates</th><th>Reference</th><th>Requested</th><th>Hold Expires</th><th>Status</th><th>Action</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    } catch(e){
+      statusEl.textContent = 'Could not load bookings.';
+    }
+  }
+
+  function escapeHtml(str){
+    return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  async function act(action, reference){
+    if(action === 'cancel' && !confirm('Release this room immediately?')) return;
+    try{
+      const res = await fetch('/api/admin?action=' + action + '&key=' + encodeURIComponent(ADMIN_KEY), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: reference })
+      });
+      const data = await res.json();
+      if(!data.success){
+        alert('Failed: ' + (data.message || 'Unknown error'));
+        return;
+      }
+      loadBookings();
+    } catch(e){
+      alert('Request failed.');
+    }
+  }
+
+  if(ADMIN_KEY){ showApp(); }
+</script>
+
+</body>
+</html>
