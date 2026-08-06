@@ -14,6 +14,8 @@
 // GET  /api/admin?action=grid&key=...&days=14       per-room-type remaining-inventory grid
 // POST /api/admin?action=confirm&key=...   body: { reference }
 // POST /api/admin?action=cancel&key=...    body: { reference }
+// POST /api/admin?action=checkout&key=...  body: { reference, checkoutDate? }
+// POST /api/admin?action=delete&key=...    body: { reference }  -- permanent, releases any held inventory
 
 const ROOM_INVENTORY = {
   'classic': 50,
@@ -340,7 +342,56 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(400).json({ success: false, message: 'Unknown action. Use list, list-all, today, grid, backfill-index (GET), confirm, cancel or checkout (POST).' });
+    if (action === 'delete' && req.method === 'POST') {
+      // Permanently removes a booking record and reverses any inventory
+      // impact it still holds, regardless of status. Intended for cleaning
+      // up test bookings or data-entry mistakes -- there's no undo, so the
+      // staff UI should confirm with the user before calling this.
+      const body = await readBody(req);
+      const reference = body && body.reference;
+      if (!reference) {
+        res.status(400).json({ success: false, message: 'reference is required' });
+        return;
+      }
+      const recRes = await redisPipeline(redisConfig, [['GET', 'booking:' + reference]]);
+      const raw = recRes[0] && recRes[0].result;
+      if (!raw) {
+        res.status(404).json({ success: false, message: 'Booking not found' });
+        return;
+      }
+      const record = JSON.parse(raw);
+      const slug = slugify(record.roomType);
+      const nights = datesBetween(record.checkin, record.checkout).slice(0, -1);
+      const commands = [];
+      let releasedNights = 0;
+
+      if (record.status === 'pending') {
+        // Pending holds only ever touched hold: entries, never booked:.
+        nights.forEach(d => commands.push(['ZREM', 'hold:' + slug + ':' + d, reference]));
+      } else if (record.status === 'confirmed') {
+        // Every night is still held in the booked: counters.
+        nights.forEach(d => commands.push(['DECR', 'booked:' + slug + ':' + d]));
+        releasedNights = nights.length;
+      } else if (record.status === 'checked-out') {
+        // Nights from actualCheckout onward were already released back to
+        // booked: at checkout time -- only the nights before that remain held.
+        const stillHeld = record.actualCheckout
+          ? nights.filter(d => d < record.actualCheckout)
+          : nights;
+        stillHeld.forEach(d => commands.push(['DECR', 'booked:' + slug + ':' + d]));
+        releasedNights = stillHeld.length;
+      }
+      // cancelled bookings already had their holds released by /cancel.
+
+      commands.push(['ZREM', 'pending-bookings', reference]);
+      commands.push(['ZREM', 'all-bookings', reference]);
+      commands.push(['DEL', 'booking:' + reference]);
+      await redisPipeline(redisConfig, commands);
+      res.status(200).json({ success: true, reference, deleted: true, releasedNights });
+      return;
+    }
+
+    res.status(400).json({ success: false, message: 'Unknown action. Use list, list-all, today, grid, backfill-index (GET), confirm, cancel, checkout or delete (POST).' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Admin action failed', detail: String(err) });
   }
