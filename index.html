@@ -1573,6 +1573,24 @@
   updateGuestSummary();
 
   /* ---- Calendar picker + live availability ---- */
+  /* Ensure default search dates never go stale. The checkin/checkout hidden
+     inputs ship with hardcoded values; if those have fallen into the past
+     (e.g. the page hasn't been redeployed in a while), roll them forward to
+     a sensible future range instead of silently querying availability for
+     dates that already happened. */
+  (function ensureFreshDefaultDates(){
+    const ciEl = document.getElementById('checkin');
+    const coEl = document.getElementById('checkout');
+    const todayStr = todayISODate();
+    if (!ciEl.value || ciEl.value < todayStr) {
+      const now = new Date();
+      const inD = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const outD = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3);
+      ciEl.value = toISODate(inD.getFullYear(), inD.getMonth(), inD.getDate());
+      coEl.value = toISODate(outD.getFullYear(), outD.getMonth(), outD.getDate());
+    }
+  })();
+
   let calSelStart = document.getElementById('checkin').value;
   let calSelEnd = document.getElementById('checkout').value;
   let calBaseMonth = (function(){
