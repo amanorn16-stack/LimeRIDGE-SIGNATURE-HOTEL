@@ -43,6 +43,7 @@
   .btn-confirm{ background:var(--green); color:#fff; }
   .btn-cancel{ background:#fff; color:#b23b3b; border:1px solid #e6b8b8 !important; }
   .btn-checkout{ background:var(--gold); color:#fff; border:none; border-radius:14px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer; }
+  .btn-delete{ background:#fff; color:#8a8a8a; border:1px solid var(--line); border-radius:14px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer; }
 
   .empty-note{ font-size:13px; color:var(--muted); padding:16px; background:#fff; border:1px solid var(--line); border-radius:10px; }
   .status-msg{ font-size:12.5px; margin-bottom:12px; color:var(--muted); }
@@ -224,19 +225,23 @@
   function bookingsTable(bookings, emptyMsg, opts){
     opts = opts || {};
     const showCheckout = !!opts.showCheckout;
+    const showDelete = !!opts.showDelete;
     if(!bookings || bookings.length === 0) return '<div class="empty-note">' + emptyMsg + '</div>';
     const rows = bookings.map(b => {
       const canCheckout = showCheckout && b.status === 'confirmed';
+      const actionButtons = [];
+      if(canCheckout) actionButtons.push('<button class="btn-checkout" onclick="promptCheckout(\'' + b.reference + '\')">Check out</button>');
+      if(showDelete) actionButtons.push('<button class="btn-delete" onclick="promptDelete(\'' + b.reference + '\')">Delete</button>');
       return '<tr>' +
         '<td>' + escapeHtml(b.roomType) + '</td>' +
         '<td>' + guestCell(b) + '</td>' +
         '<td>' + escapeHtml(b.checkin) + ' &rarr; ' + escapeHtml(b.checkout) + '</td>' +
         '<td>' + escapeHtml(b.reference) + '</td>' +
         '<td><span class="badge ' + escapeHtml(b.status) + '">' + escapeHtml(b.status.replace('-', ' ')) + '</span></td>' +
-        (showCheckout ? '<td>' + (canCheckout ? '<button class="btn-checkout" onclick="promptCheckout(\'' + b.reference + '\')">Check out</button>' : '') + '</td>' : '') +
+        ((showCheckout || showDelete) ? '<td><div class="row-actions">' + actionButtons.join('') + '</div></td>' : '') +
       '</tr>';
     }).join('');
-    const headerExtra = showCheckout ? '<th>Action</th>' : '';
+    const headerExtra = (showCheckout || showDelete) ? '<th>Action</th>' : '';
     return '<table><thead><tr><th>Room</th><th>Guest</th><th>Dates</th><th>Reference</th><th>Status</th>' + headerExtra + '</tr></thead><tbody>' + rows + '</tbody></table>';
   }
 
@@ -266,6 +271,29 @@
     }
   }
 
+  async function promptDelete(reference){
+    if(!confirm('Permanently delete booking ' + reference + '? This releases any inventory it still holds and cannot be undone.')) return;
+    try{
+      const res = await fetch('/api/admin?action=delete&key=' + encodeURIComponent(ADMIN_KEY), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: reference })
+      });
+      const data = await res.json();
+      if(!data.success){
+        alert('Failed: ' + (data.message || 'Unknown error'));
+        return;
+      }
+      if(data.releasedNights > 0){
+        alert('Deleted. ' + data.releasedNights + ' night(s) released back into inventory.');
+      }
+      loadAll();
+      loadToday();
+    } catch(e){
+      alert('Request failed.');
+    }
+  }
+
   // ---------- ALL BOOKINGS ----------
   async function loadAll(){
     const statusEl = document.getElementById('allStatus');
@@ -283,7 +311,7 @@
   function renderAll(){
     const filter = document.getElementById('allStatusFilter').value;
     const list = filter ? allBookingsCache.filter(b => b.status === filter) : allBookingsCache;
-    document.getElementById('allWrap').innerHTML = bookingsTable(list, 'No bookings found.', {showCheckout:true});
+    document.getElementById('allWrap').innerHTML = bookingsTable(list, 'No bookings found.', {showCheckout:true, showDelete:true});
   }
 
   // ---------- PENDING TRANSFERS ----------
