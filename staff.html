@@ -36,11 +36,13 @@
   .badge.confirmed{ background:#eaf4e2; color:#4a7c2b; }
   .badge.cancelled{ background:#f2f2f2; color:var(--muted); }
   .badge.expired{ background:#f2f2f2; color:var(--muted); }
+  .badge.checked-out{ background:#eef2fb; color:#3b5bab; }
 
   .row-actions{ display:flex; gap:6px; }
   .row-actions button{ border:none; border-radius:14px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer; }
   .btn-confirm{ background:var(--green); color:#fff; }
   .btn-cancel{ background:#fff; color:#b23b3b; border:1px solid #e6b8b8 !important; }
+  .btn-checkout{ background:var(--gold); color:#fff; border:none; border-radius:14px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer; }
 
   .empty-note{ font-size:13px; color:var(--muted); padding:16px; background:#fff; border:1px solid var(--line); border-radius:10px; }
   .status-msg{ font-size:12.5px; margin-bottom:12px; color:var(--muted); }
@@ -106,6 +108,7 @@
         <option value="">All statuses</option>
         <option value="confirmed">Confirmed</option>
         <option value="pending">Pending</option>
+        <option value="checked-out">Checked out</option>
         <option value="cancelled">Cancelled</option>
       </select>
     </div>
@@ -207,8 +210,8 @@
         statCard(data.departures.length, 'Departures') +
         statCard(data.inHouse.length, 'In-house');
       document.getElementById('arrivalsWrap').innerHTML = bookingsTable(data.arrivals, 'No arrivals today.');
-      document.getElementById('departuresWrap').innerHTML = bookingsTable(data.departures, 'No departures today.');
-      document.getElementById('inhouseWrap').innerHTML = bookingsTable(data.inHouse, 'No guests in-house tonight.');
+      document.getElementById('departuresWrap').innerHTML = bookingsTable(data.departures, 'No departures today.', {showCheckout:true});
+      document.getElementById('inhouseWrap').innerHTML = bookingsTable(data.inHouse, 'No guests in-house tonight.', {showCheckout:true});
     } catch(e){
       statusEl.textContent = e.message || "Could not load today's bookings.";
     }
@@ -218,16 +221,49 @@
     return '<div class="stat-card"><div class="num">' + num + '</div><div class="label">' + label + '</div></div>';
   }
 
-  function bookingsTable(bookings, emptyMsg){
+  function bookingsTable(bookings, emptyMsg, opts){
+    opts = opts || {};
+    const showCheckout = !!opts.showCheckout;
     if(!bookings || bookings.length === 0) return '<div class="empty-note">' + emptyMsg + '</div>';
-    const rows = bookings.map(b => '<tr>' +
-      '<td>' + escapeHtml(b.roomType) + '</td>' +
-      '<td>' + guestCell(b) + '</td>' +
-      '<td>' + escapeHtml(b.checkin) + ' &rarr; ' + escapeHtml(b.checkout) + '</td>' +
-      '<td>' + escapeHtml(b.reference) + '</td>' +
-      '<td><span class="badge ' + escapeHtml(b.status) + '">' + escapeHtml(b.status) + '</span></td>' +
-    '</tr>').join('');
-    return '<table><thead><tr><th>Room</th><th>Guest</th><th>Dates</th><th>Reference</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    const rows = bookings.map(b => {
+      const canCheckout = showCheckout && b.status === 'confirmed';
+      return '<tr>' +
+        '<td>' + escapeHtml(b.roomType) + '</td>' +
+        '<td>' + guestCell(b) + '</td>' +
+        '<td>' + escapeHtml(b.checkin) + ' &rarr; ' + escapeHtml(b.checkout) + '</td>' +
+        '<td>' + escapeHtml(b.reference) + '</td>' +
+        '<td><span class="badge ' + escapeHtml(b.status) + '">' + escapeHtml(b.status.replace('-', ' ')) + '</span></td>' +
+        (showCheckout ? '<td>' + (canCheckout ? '<button class="btn-checkout" onclick="promptCheckout(\'' + b.reference + '\')">Check out</button>' : '') + '</td>' : '') +
+      '</tr>';
+    }).join('');
+    const headerExtra = showCheckout ? '<th>Action</th>' : '';
+    return '<table><thead><tr><th>Room</th><th>Guest</th><th>Dates</th><th>Reference</th><th>Status</th>' + headerExtra + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  async function promptCheckout(reference){
+    const today = new Date().toISOString().slice(0, 10);
+    const input = prompt('Check-out date (YYYY-MM-DD). Leave as today for a normal checkout, or enter an earlier date if the guest is leaving early and the remaining nights should be released back into inventory:', today);
+    if(input === null) return;
+    const checkoutDate = (input.trim() || today);
+    try{
+      const res = await fetch('/api/admin?action=checkout&key=' + encodeURIComponent(ADMIN_KEY), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: reference, checkoutDate: checkoutDate })
+      });
+      const data = await res.json();
+      if(!data.success){
+        alert('Failed: ' + (data.message || 'Unknown error'));
+        return;
+      }
+      if(data.releasedNights > 0){
+        alert('Checked out. ' + data.releasedNights + ' night(s) released back into inventory.');
+      }
+      loadToday();
+      if(document.getElementById('panel-all').classList.contains('active')) loadAll();
+    } catch(e){
+      alert('Request failed.');
+    }
   }
 
   // ---------- ALL BOOKINGS ----------
@@ -247,7 +283,7 @@
   function renderAll(){
     const filter = document.getElementById('allStatusFilter').value;
     const list = filter ? allBookingsCache.filter(b => b.status === filter) : allBookingsCache;
-    document.getElementById('allWrap').innerHTML = bookingsTable(list, 'No bookings found.');
+    document.getElementById('allWrap').innerHTML = bookingsTable(list, 'No bookings found.', {showCheckout:true});
   }
 
   // ---------- PENDING TRANSFERS ----------
