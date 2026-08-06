@@ -227,6 +227,56 @@ module.exports = async (req, res) => {
       return;
     }
 
+    if (action === 'checkout' && req.method === 'POST') {
+      // Marks a confirmed booking as checked-out. If the guest is leaving
+      // before their original checkout date (early checkout), the unused
+      // remaining nights are released back into the booked: counters so
+      // the room becomes bookable again immediately instead of staying
+      // held until the original checkout date.
+      const body = await readBody(req);
+      const reference = body && body.reference;
+      const checkoutDate = (body && body.checkoutDate) || lagosToday();
+      if (!reference) {
+        res.status(400).json({ success: false, message: 'reference is required' });
+        return;
+      }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(checkoutDate)) {
+        res.status(400).json({ success: false, message: 'checkoutDate must be YYYY-MM-DD' });
+        return;
+      }
+      const recRes = await redisPipeline(redisConfig, [['GET', 'booking:' + reference]]);
+      const raw = recRes[0] && recRes[0].result;
+      if (!raw) {
+        res.status(404).json({ success: false, message: 'Booking not found' });
+        return;
+      }
+      const record = JSON.parse(raw);
+      if (record.status !== 'confirmed') {
+        res.status(400).json({ success: false, message: 'Only confirmed bookings can be checked out (status: ' + record.status + ')' });
+        return;
+      }
+      if (checkoutDate < record.checkin) {
+        res.status(400).json({ success: false, message: 'Check-out date cannot be before check-in (' + record.checkin + ')' });
+        return;
+      }
+      const slug = slugify(record.roomType);
+      const bookedNights = datesBetween(record.checkin, record.checkout).slice(0, -1);
+      // Nights from the chosen checkout date onward that were still booked
+      // under the original stay -- these are the ones being given back.
+      const releaseNights = bookedNights.filter(d => d >= checkoutDate);
+      const commands = [];
+      releaseNights.forEach(d => {
+        commands.push(['DECR', 'booked:' + slug + ':' + d]);
+      });
+      record.status = 'checked-out';
+      record.actualCheckout = checkoutDate;
+      record.checkedOutAt = new Date().toISOString();
+      commands.push(['SET', 'booking:' + reference, JSON.stringify(record)]);
+      await redisPipeline(redisConfig, commands);
+      res.status(200).json({ success: true, reference, status: 'checked-out', releasedNights: releaseNights.length });
+      return;
+    }
+
     if (action === 'confirm' && req.method === 'POST') {
       const body = await readBody(req);
       const reference = body && body.reference;
@@ -290,7 +340,7 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(400).json({ success: false, message: 'Unknown action. Use list, list-all, today, grid, backfill-index (GET), confirm or cancel (POST).' });
+    res.status(400).json({ success: false, message: 'Unknown action. Use list, list-all, today, grid, backfill-index (GET), confirm, cancel or checkout (POST).' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Admin action failed', detail: String(err) });
   }
