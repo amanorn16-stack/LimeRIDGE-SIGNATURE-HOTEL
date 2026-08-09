@@ -134,7 +134,7 @@
   }
   @media(max-width:700px){ .navbar .util a:not(.cta){ display:none; } }
 
-  .text-logo{ font-family:Georgia,'Times New Roman',serif; line-height:1; }
+  .currency-selector{ position:relative; } .currency-btn{ display:flex; align-items:center; gap:5px; background:none; border:none; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--ink); padding:0; font-family:inherit; } .currency-btn .cur-ico{ font-size:15px; line-height:1; } .currency-btn .cur-caret{ font-size:9px; color:var(--muted); transition:transform .15s; } .currency-selector.open .cur-caret{ transform:rotate(180deg); } .currency-panel{ display:none; position:absolute; top:calc(100% + 14px); right:0; width:230px; background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.14); padding:10px; z-index:60; } .currency-selector.open .currency-panel{ display:block; } .currency-panel-head{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); font-weight:700; padding:4px 8px 8px; } .currency-list{ display:flex; flex-direction:column; } .currency-option{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 8px; border-radius:8px; cursor:pointer; font-size:13px; } .currency-option:hover{ background:var(--page-bg); } .currency-option.active{ background:rgba(122,35,51,0.08); color:var(--maroon); font-weight:700; } .currency-option .code{ font-weight:700; margin-right:6px; } .currency-option .rate{ color:var(--muted); font-size:11px; white-space:nowrap; } .currency-panel-foot{ font-size:10px; color:var(--muted); text-align:center; padding-top:8px; margin-top:4px; border-top:1px solid var(--line); } .fx-line{ display:block; font-size:11.5px; color:var(--muted); font-weight:600; margin-top:2px; } .summary-row.fx-row span{ color:var(--muted); font-size:11.5px; } .text-logo{ font-family:Georgia,'Times New Roman',serif; line-height:1; }
   .text-logo .tl-lime{ color:#6d9c3a; font-size:20px; font-weight:700; }
   .text-logo .tl-ridge{ color:#c98f00; font-size:20px; font-weight:700; }
   .text-logo .tl-sub{ color:var(--muted); font-size:8.5px; letter-spacing:2px; font-family:Arial,sans-serif; font-weight:700; margin-top:1px; }
@@ -1012,7 +1012,7 @@
   </div>
   <div class="util">
     <a href="#contact">Help</a>
-    <a href="#rooms">My Trips</a>
+    <a href="#rooms">My Trips</a> <div class="currency-selector" id="currencySelector"><button type="button" class="currency-btn" id="currencyBtn" onclick="toggleCurrencyPanel(event)" aria-haspopup="true" aria-label="Change display currency"><span class="cur-ico">&#128177;</span><span id="currencyBtnLabel">NGN</span><span class="cur-caret">&#9662;</span></button><div class="currency-panel" id="currencyPanel"><div class="currency-panel-head">Display prices in</div><div id="currencyList" class="currency-list"></div><div class="currency-panel-foot" id="currencyUpdated">Loading live rates&hellip;</div></div></div>
     <a href="#book" class="cta">Book Now</a>
   </div>
 </div>
@@ -1397,7 +1397,7 @@
         <h4>Summary</h4>
         <div class="summary-row"><span id="sumRoom">Room</span><span id="sumRate">$0</span></div>
         <div class="summary-row"><span>Nights</span><span id="sumNights">2</span></div>
-        <div class="summary-row total"><span>Total</span><span id="sumTotal">$0</span></div>
+        <div class="summary-row total"><span>Total</span><span id="sumTotal">$0</span></div> <div class="summary-row fx-row" id="sumFxRow" style="display:none;"><span>Approx.</span><span id="sumFxTotal"></span></div>
       </div>
 
       <div class="modal-section">
@@ -1801,8 +1801,7 @@
     }));
   }
 
-  updateDateSummary();
-  refreshRoomAvailability();
+  updateDateSummary(); refreshRoomAvailability(); let currentRoomName = ''; let currentTotal = 0; const CURRENCIES = [ { code: 'NGN', symbol: '₦', label: 'Nigerian Naira' }, { code: 'USD', symbol: '$', label: 'US Dollar' }, { code: 'GBP', symbol: '£', label: 'British Pound' }, { code: 'EUR', symbol: '€', label: 'Euro' }, { code: 'GHS', symbol: 'GH₵', label: 'Ghanaian Cedi' } ]; let fxRates = null; let fxUpdatedAt = null; let selectedCurrency = localStorage.getItem('limeridge_currency') || 'NGN'; function parseNgnAmount(text){ const digits = String(text).replace(/[^0-9]/g, ''); return digits ? parseInt(digits, 10) : 0; } function formatCurrency(amountNgn, code){ if(code === 'NGN' || !fxRates || !fxRates[code]) return null; const converted = amountNgn * fxRates[code]; const cur = CURRENCIES.find(c => c.code === code); const sym = cur ? cur.symbol : code + ' '; const rounded = converted >= 100 ? Math.round(converted).toLocaleString() : converted.toFixed(2); return sym + rounded; } async function loadFxRates(){ try { const cachedRaw = localStorage.getItem('limeridge_fx_cache'); if(cachedRaw){ const cached = JSON.parse(cachedRaw); if(cached && cached.rates && (Date.now() - cached.fetchedAt) < 60 * 60 * 1000){ fxRates = cached.rates; fxUpdatedAt = cached.time; renderCurrencyOptions(); applyCurrencyDisplay(); return; } } } catch(e){} try { const res = await fetch('https://open.er-api.com/v6/latest/NGN'); const data = await res.json(); if(data && data.result === 'success' && data.rates){ fxRates = data.rates; fxUpdatedAt = data.time_last_update_utc; try { localStorage.setItem('limeridge_fx_cache', JSON.stringify({ rates: fxRates, time: fxUpdatedAt, fetchedAt: Date.now() })); } catch(e){} } } catch(e){} renderCurrencyOptions(); applyCurrencyDisplay(); } function renderCurrencyOptions(){ const list = document.getElementById('currencyList'); if(!list) return; list.innerHTML = CURRENCIES.map(function(c){ const active = c.code === selectedCurrency ? ' active' : ''; let rateLabel = c.code === 'NGN' ? 'Base currency' : (fxRates ? 'Unavailable' : 'Loading&hellip;'); if(c.code !== 'NGN' && fxRates && fxRates[c.code]){ const r = fxRates[c.code]; rateLabel = '1 NGN &#8776; ' + c.symbol + (r < 1 ? r.toFixed(4) : r.toFixed(2)); } return '<div class="currency-option' + active + '" onclick="selectCurrency(\'' + c.code + '\')">' + '<span><span class="code">' + c.code + '</span>' + c.label + '</span>' + '<span class="rate">' + rateLabel + '</span></div>'; }).join(''); const updatedEl = document.getElementById('currencyUpdated'); if(updatedEl){ updatedEl.textContent = fxRates ? ('Live rates · updated ' + (fxUpdatedAt || 'recently')) : 'Live rates unavailable — showing NGN'; } const btnLabel = document.getElementById('currencyBtnLabel'); if(btnLabel) btnLabel.textContent = selectedCurrency; } function selectCurrency(code){ selectedCurrency = code; try { localStorage.setItem('limeridge_currency', code); } catch(e){} renderCurrencyOptions(); applyCurrencyDisplay(); closeCurrencyPanel(); } function applyCurrencyDisplay(){ document.querySelectorAll('.room-foot .amt').forEach(function(el){ if(!el.dataset.ngn){ el.dataset.ngn = parseNgnAmount(el.textContent); } let fxEl = el.parentElement.querySelector('.fx-line'); const converted = formatCurrency(parseInt(el.dataset.ngn, 10), selectedCurrency); if(converted){ if(!fxEl){ fxEl = document.createElement('span'); fxEl.className = 'fx-line'; el.parentElement.appendChild(fxEl); } fxEl.textContent = '≈ ' + converted; } else if(fxEl){ fxEl.remove(); } }); updateModalFx(); } function updateModalFx(){ const fxRow = document.getElementById('sumFxRow'); const fxTotal = document.getElementById('sumFxTotal'); if(!fxRow || !fxTotal) return; const converted = currentTotal ? formatCurrency(currentTotal, selectedCurrency) : null; if(converted){ fxTotal.textContent = '≈ ' + converted; fxRow.style.display = 'flex'; } else { fxRow.style.display = 'none'; } } function toggleCurrencyPanel(e){ if(e) e.stopPropagation(); const sel = document.getElementById('currencySelector'); if(sel) sel.classList.toggle('open'); } function closeCurrencyPanel(){ const sel = document.getElementById('currencySelector'); if(sel) sel.classList.remove('open'); } document.addEventListener('click', function(e){ const sel = document.getElementById('currencySelector'); if(sel && sel.classList.contains('open') && !sel.contains(e.target)){ sel.classList.remove('open'); } }); renderCurrencyOptions(); loadFxRates();
 
   function nightsBetween(){
     const ci = new Date(document.getElementById('checkin').value);
@@ -1810,9 +1809,8 @@
     const diff = Math.round((co - ci) / (1000*60*60*24));
     return diff > 0 ? diff : 1;
   }
-
-  let currentRoomName = '';
-  let currentTotal = 0;
+  
+  
 
   function openCheckout(roomName, rate){
     document.getElementById('modalRoomName').textContent = roomName;
@@ -1822,7 +1820,7 @@
     document.getElementById('sumNights').textContent = nights;
     currentRoomName = roomName;
     currentTotal = rate * nights;
-    document.getElementById('sumTotal').textContent = '₦' + currentTotal.toLocaleString();
+    document.getElementById('sumTotal').textContent = '₦' + currentTotal.toLocaleString(); updateModalFx();
     document.getElementById('bookingView').style.display = 'block';
     document.getElementById('confirmView').classList.remove('active');
     document.getElementById('pmBankRadio').checked = true;
