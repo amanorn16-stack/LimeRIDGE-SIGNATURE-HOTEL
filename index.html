@@ -1395,7 +1395,7 @@
 
       <div class="modal-section">
         <h4>Summary</h4>
-        <div class="summary-row"><span id="sumRoom">Room</span><span id="sumRate">$0</span></div>
+        <div class="summary-row"><span id="sumRoom">Room</span><span id="sumRate">$0</span></div><div class="summary-row"><span>Rooms</span><span id="sumRooms">1</span></div>
         <div class="summary-row"><span>Nights</span><span id="sumNights">2</span></div>
         <div class="summary-row total"><span>Total</span><span id="sumTotal">$0</span></div> <div class="summary-row fx-row" id="sumFxRow" style="display:none;"><span>Approx.</span><span id="sumFxTotal"></span></div>
       </div>
@@ -1815,7 +1815,7 @@
   function openCheckout(roomName, rate){
     document.getElementById('modalRoomName').textContent = roomName;
     document.getElementById('sumRoom').textContent = roomName;
-    document.getElementById('sumRate').textContent = '₦' + rate.toLocaleString() + ' / night';
+    document.getElementById('sumRate').textContent = '₦' + rate.toLocaleString() + ' / night'; document.getElementById('sumRooms').textContent = guestState.rooms;
     const nights = nightsBetween();
     document.getElementById('sumNights').textContent = nights;
     currentRoomName = roomName;
