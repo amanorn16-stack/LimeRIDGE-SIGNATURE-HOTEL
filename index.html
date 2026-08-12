@@ -33,6 +33,20 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
+<script>
+function trackPaymentSelection(method) {
+  if (window.va) {
+    window.va('event', {
+      name: 'payment_method_selected',
+      data: {
+        payment_method: method,
+        region: paymentRegion,
+        room_type: selectedRoom || 'unknown'
+      }
+    });
+  }
+}
+</script>
 <script defer src="/_vercel/speed-insights/script.js"></script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script src="https://checkout.flutterwave.com/v3.js"></script>
@@ -2047,6 +2061,7 @@
     flutterwavePanel.style.display = 'none';
     otherPanel.style.display = 'none';
     payBtn.style.display = 'block';
+    trackPaymentSelection(method);
 
     if(method === 'bank'){
       bankPanel.style.display = 'block';
