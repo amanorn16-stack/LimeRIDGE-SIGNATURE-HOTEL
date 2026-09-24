@@ -1696,6 +1696,112 @@
     margin-top:20px;
   }
   .note-card b{ color:var(--maroon); font-weight:700; }
+
+  /* ============================================================
+     MOBILE MENU
+     ============================================================ */
+  .nav-toggle{
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    gap:4px;
+    width:40px;
+    height:38px;
+    padding:0 9px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:rgba(255,255,255,.7);
+    cursor:pointer;
+    transition:border-color .2s, background .2s;
+  }
+  .nav-toggle span{
+    display:block;
+    height:1.6px;
+    width:100%;
+    background:var(--ink-2);
+    border-radius:2px;
+    transition:transform .28s var(--ease-out), opacity .2s;
+  }
+  .nav-toggle.open{ border-color:var(--maroon); background:#fff; }
+  .nav-toggle.open span:nth-child(1){ transform:translateY(5.6px) rotate(45deg); }
+  .nav-toggle.open span:nth-child(2){ opacity:0; }
+  .nav-toggle.open span:nth-child(3){ transform:translateY(-5.6px) rotate(-45deg); }
+  @media(max-width:700px){ .nav-toggle{ display:flex; } }
+
+  .nav-menu{
+    display:none;
+    position:absolute;
+    top:100%;
+    left:0;
+    right:0;
+    background:var(--card);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    box-shadow:var(--shadow-lg);
+    padding:8px;
+    z-index:94;
+  }
+  .nav-menu.open{ display:block; animation:popIn .2s var(--ease-out); }
+  .nav-menu a{
+    display:block;
+    padding:13px 16px;
+    font-size:15px;
+    font-weight:500;
+    color:var(--ink-2);
+    border-radius:10px;
+    transition:background .16s, color .16s;
+  }
+  .nav-menu a + a{ border-top:1px solid var(--line-2); }
+  .nav-menu a:active, .nav-menu a:hover{ background:var(--sand); color:var(--maroon); }
+
+  /* ============================================================
+     MOBILE REFINEMENTS
+     ============================================================ */
+  .modal h2{ padding-right:44px; }
+
+  @media(max-width:560px){
+    .hero{ min-height:clamp(420px, 66vh, 560px); }
+    .hero .eyebrow{ letter-spacing:2.1px; font-size:9.5px; }
+    .hero .eyebrow::before{ width:18px; }
+
+    /* Let the month grids shrink so the next-month arrow isn't clipped off. */
+    .calendar-panel{ padding:16px 12px; }
+    .cal-month{ min-width:0; }
+    .cal-months{ gap:18px; }
+    .cal-nav-row{ gap:4px; }
+    .cal-nav-btn{ width:30px; height:30px; font-size:11px; }
+    .cal-day{ font-size:12px; border-radius:8px; }
+    .cal-day .cal-price{ font-size:7.5px; }
+    .cal-footer{ gap:12px; }
+    .cal-check-btn{ width:100%; }
+
+    /* Use more of the screen, and keep the title clear of the close button. */
+    .modal-overlay{ padding:10px; }
+    .modal{ padding:24px 18px; border-radius:var(--r-lg); }
+    .modal h2{ font-size:22px; padding-right:42px; }
+    .modal-close{ top:12px; right:12px; width:32px; height:32px; font-size:17px; }
+    .bank-card .acc-no{ font-size:19px; letter-spacing:1px; }
+
+    /* Two floating buttons cover too much of the page on a phone. */
+    .fab-email{ display:none; }
+    .fab{ width:46px; height:46px; }
+    .floating-actions{ right:12px; bottom:12px; }
+
+    .media-pair{ gap:10px; }
+    .stat-row{ gap:18px; }
+    .stat-row .stat b{ font-size:23px; }
+    .filter-row{ gap:8px; margin-top:26px; }
+    .filter-pill{ padding:8px 14px; font-size:12px; }
+    .room-body h3{ font-size:21px; }
+    .room-foot .price .amt{ font-size:23px; }
+    .prose-body h3{ font-size:20px; }
+    .section-head{ padding-bottom:18px; margin-bottom:26px; }
+  }
+
+  @media(max-width:390px){
+    .cal-day .cal-price{ display:none; }
+    .cal-day{ font-size:12.5px; }
+  }
 </style>
 </head>
 <body>
@@ -1708,6 +1814,7 @@
   <div class="util">
     <a href="#contact">Help</a>
     <a href="#rooms">My Trips</a>
+    <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navMenu"><span></span><span></span><span></span></button>
     <div class="currency-selector" id="currencySelector">
       <button type="button" class="currency-btn" id="currencyBtn" onclick="toggleCurrencyPanel(event)" aria-haspopup="true" aria-label="Change display currency">
         <span class="cur-ico">&#128177;</span><span id="currencyBtnLabel">NGN</span><span class="cur-caret">&#9662;</span>
@@ -1720,6 +1827,16 @@
     </div>
     <a href="#book" class="cta">Book Now</a>
   </div>
+  <nav class="nav-menu" id="navMenu">
+    <a href="#rooms">Rooms</a>
+    <a href="#about">Our Story</a>
+    <a href="#dining">Restaurant &amp; Dining</a>
+    <a href="#events">Jamel Hall</a>
+    <a href="#airport-taxi">Airport Taxi</a>
+    <a href="#amenities">Amenities</a>
+    <a href="#location">Location</a>
+    <a href="#contact">Contact</a>
+  </nav>
 </div>
 
 <div class="hero">
@@ -3071,6 +3188,43 @@
       };
       onScroll();
       window.addEventListener('scroll', onScroll, { passive:true });
+    }
+
+    /* ---- mobile menu ---- */
+    var navToggle = document.getElementById('navToggle');
+    var navMenu = document.getElementById('navMenu');
+    if(navToggle && navMenu){
+      var setMenu = function(open){
+        navMenu.classList.toggle('open', open);
+        navToggle.classList.toggle('open', open);
+        navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      };
+      navToggle.addEventListener('click', function(e){
+        e.stopPropagation();
+        setMenu(!navMenu.classList.contains('open'));
+      });
+      /* Jump instantly rather than relying on smooth scrolling, which some
+         browsers and OS accessibility settings disable outright. */
+      navMenu.addEventListener('click', function(e){
+        var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+        if(!a) return;
+        var id = a.getAttribute('href').slice(1);
+        var target = id ? document.getElementById(id) : null;
+        setMenu(false);
+        if(target){
+          e.preventDefault();
+          target.scrollIntoView({ block:'start', behavior:'instant' });
+          if(history.replaceState) history.replaceState(null, '', '#' + id);
+        }
+      });
+      document.addEventListener('click', function(e){
+        if(!navMenu.classList.contains('open')) return;
+        if(navMenu.contains(e.target) || navToggle.contains(e.target)) return;
+        setMenu(false);
+      });
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape') setMenu(false);
+      });
     }
 
     if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
