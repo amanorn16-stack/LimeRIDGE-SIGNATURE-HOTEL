@@ -1538,6 +1538,160 @@
     }
     .reveal{ opacity:1; transform:none; }
   }
+
+  /* ============================================================
+     EDITORIAL CONTENT SECTIONS (story / dining / events / taxi)
+     ============================================================ */
+  .prose-split{
+    display:grid;
+    grid-template-columns:1.05fr .95fr;
+    gap:clamp(24px,4.2vw,56px);
+    align-items:center;
+  }
+  @media(max-width:820px){ .prose-split{ grid-template-columns:1fr; gap:28px; } }
+  .prose-split.reverse > *:last-child{ order:-1; }
+  @media(max-width:820px){ .prose-split.reverse > *:last-child{ order:0; } }
+  .prose-kicker{
+    font-size:10px;
+    letter-spacing:2.4px;
+    text-transform:uppercase;
+    color:var(--maroon);
+    font-weight:700;
+    margin-bottom:12px;
+  }
+  .prose-body h3{
+    font-family:var(--font-display);
+    font-size:clamp(21px,2.6vw,28px);
+    font-weight:600;
+    letter-spacing:-.4px;
+    margin-bottom:14px;
+    line-height:1.2;
+  }
+  .prose-body p{
+    font-size:14.5px;
+    color:var(--muted);
+    line-height:1.8;
+    margin-bottom:14px;
+  }
+  .prose-body p:last-child{ margin-bottom:0; }
+  .prose-media{
+    border-radius:var(--r-lg);
+    overflow:hidden;
+    box-shadow:var(--shadow-md);
+    aspect-ratio:4/3;
+    background:var(--ph-bg);
+  }
+  .prose-media img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:transform .9s var(--ease-out);
+  }
+  .prose-media:hover img{ transform:scale(1.05); }
+  .media-pair{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .media-pair .prose-media{ aspect-ratio:3/4; }
+
+  .check-list{ list-style:none; display:grid; gap:11px; margin-top:4px; }
+  .check-list li{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    font-size:14px;
+    color:var(--ink-2);
+    line-height:1.6;
+  }
+  .check-list li::before{
+    content:'\2713';
+    flex:none;
+    width:21px;
+    height:21px;
+    border-radius:50%;
+    background:rgba(79,138,61,.13);
+    color:var(--green);
+    font-size:11px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:1px;
+  }
+
+  .step-list{ list-style:none; counter-reset:step; display:grid; gap:16px; margin-top:4px; }
+  .step-list li{
+    counter-increment:step;
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    font-size:14px;
+    color:var(--muted);
+    line-height:1.6;
+  }
+  .step-list li::before{
+    content:counter(step);
+    flex:none;
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    background:var(--maroon);
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .step-list li b{ color:var(--ink); font-weight:600; }
+
+  .stat-row{
+    display:flex;
+    gap:clamp(20px,4vw,38px);
+    flex-wrap:wrap;
+    margin-top:22px;
+    padding-top:20px;
+    border-top:1px solid var(--line-2);
+  }
+  .stat-row .stat b{
+    display:block;
+    font-family:var(--font-display);
+    font-size:27px;
+    font-weight:600;
+    color:var(--maroon);
+    line-height:1.1;
+  }
+  .stat-row .stat span{
+    font-size:10.5px;
+    color:var(--muted);
+    letter-spacing:1.3px;
+    text-transform:uppercase;
+    font-weight:600;
+  }
+
+  .inline-cta{
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    margin-top:22px;
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--maroon);
+    border-bottom:1px solid var(--maroon);
+    padding-bottom:6px;
+    transition:gap .25s var(--ease-out);
+  }
+  .inline-cta:hover{ gap:15px; }
+
+  .note-card{
+    background:var(--sand);
+    border-radius:var(--r-md);
+    padding:16px 18px;
+    font-size:13px;
+    color:var(--ink-2);
+    line-height:1.65;
+    margin-top:20px;
+  }
+  .note-card b{ color:var(--maroon); font-weight:700; }
 </style>
 </head>
 <body>
@@ -1822,6 +1976,109 @@
     <div class="amenity"><span class="ico">&#128188;</span>Business center</div>
     <div class="amenity"><span class="ico">&#9855;</span>Room service</div>
     <div class="amenity"><span class="ico">&#9889;</span>24Hrs power supply</div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="section-head">
+    <h2>Our Story</h2>
+    <div class="sub">A home away from home</div>
+  </div>
+  <div class="prose-split">
+    <div class="prose-body">
+      <div class="prose-kicker">Luxury &amp; tranquility, in Ikeja GRA</div>
+      <h3>A serene escape in the middle of Lagos.</h3>
+      <p>LimeRidge Signature Hotel blends culture and modernity for business and leisure travellers alike. Every room is appointed with real attention to detail &mdash; plush bedding, IPTV, and the conveniences that make a stay feel effortless.</p>
+      <p>Our attentive team is on hand around the clock. Whether you're here for a weekend, a conference, or a month-long stay, you'll find everything you need to feel at home.</p>
+      <p>We sit in one of the most convenient corners of Lagos &mdash; close to corporate offices, embassies and the Ikeja business district, and a short drive from Murtala Muhammed International Airport for early flights and late arrivals.</p>
+      <div class="stat-row">
+        <div class="stat"><b>7</b><span>Room types</span></div>
+        <div class="stat"><b>200+</b><span>Event capacity</span></div>
+        <div class="stat"><b>24/7</b><span>Front desk</span></div>
+      </div>
+    </div>
+    <div class="prose-media">
+      <img src="images/pool.jpg" alt="The outdoor swimming pool at LimeRidge Signature Hotel, Ikeja GRA, Lagos" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section id="dining">
+  <div class="section-head">
+    <h2>Restaurant &amp; Dining</h2>
+    <div class="sub">Open 24 hours</div>
+  </div>
+  <div class="prose-split reverse">
+    <div class="prose-body">
+      <div class="prose-kicker">Food &amp; drink</div>
+      <h3>Farm-to-table cooking, served all day.</h3>
+      <p>Our restaurant pairs a standout kitchen with a spacious dining room and a genuine commitment to sourcing locally. The menu leans on the best of the regional culinary scene, prepared by our chefs with fresh, high-quality ingredients.</p>
+      <p>Whether it's a quiet dinner for two or a family meal, the team is here to make it a good one. Complimentary breakfast is served daily from 6:30&nbsp;AM to 10:30&nbsp;AM, mixing continental and Nigerian favourites, included with every stay.</p>
+      <a class="inline-cta" href="#book">Book a table with your stay <span>&rarr;</span></a>
+    </div>
+    <div class="media-pair prose-media-wrap">
+      <div class="prose-media"><img src="images/restaurant1.jpg" alt="Dining room at the LimeRidge Signature Hotel restaurant in Ikeja GRA, Lagos" loading="lazy"></div>
+      <div class="prose-media"><img src="images/restaurant2.jpg" alt="Table setting at the LimeRidge Signature Hotel restaurant, Ikeja GRA, Lagos" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<section id="events">
+  <div class="section-head">
+    <h2>Jamel Hall</h2>
+    <div class="sub">Events &amp; conferences</div>
+  </div>
+  <div class="prose-split">
+    <div class="prose-body">
+      <div class="prose-kicker">Event hall</div>
+      <h3>A pillar-free hall for up to 200 guests.</h3>
+      <p>Jamel Hall is a versatile, column-free space with contemporary design, refined finishes and top-of-the-line audio-visual equipment &mdash; suited to weddings, conferences and corporate gatherings alike.</p>
+      <p>In a round-table setup it seats over 200 guests, and our events team will work through the details with you so the day runs without friction.</p>
+      <ul class="check-list">
+        <li>Pillar-free floor plan with flexible layouts</li>
+        <li>Full audio-visual setup included</li>
+        <li>Dedicated events planning team</li>
+        <li>On-site catering from our kitchen</li>
+        <li>Accommodation rates for your guests</li>
+      </ul>
+      <a class="inline-cta" href="#contact">Enquire about your event <span>&rarr;</span></a>
+    </div>
+    <div class="prose-media">
+      <img src="images/hallway-art-gallery.jpg" alt="Interior at LimeRidge Signature Hotel, venue for events in Ikeja GRA, Lagos" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section id="airport-taxi">
+  <div class="section-head">
+    <h2>Airport Taxi Service</h2>
+    <div class="sub">Murtala Muhammed International</div>
+  </div>
+  <div class="prose-split">
+    <div class="prose-body">
+      <div class="prose-kicker">Start your stay with ease</div>
+      <h3>We'll be waiting when you land.</h3>
+      <ul class="check-list">
+        <li>Pre-arranged pick-up &mdash; no waiting in long lines</li>
+        <li>Comfortable, air-conditioned vehicles</li>
+        <li>Professional, friendly drivers</li>
+        <li>Transparent pricing, agreed up front</li>
+        <li>Available 24 hours a day</li>
+      </ul>
+      <div class="note-card">
+        <b>Complimentary bottled water</b> with every transfer, and group discounts for corporate and family bookings.
+      </div>
+    </div>
+    <div class="prose-body">
+      <div class="prose-kicker">How it works</div>
+      <ol class="step-list">
+        <li><b>Reserve your ride.</b> Message us on WhatsApp or email reservations with your flight details.</li>
+        <li><b>We monitor your flight.</b> Pick-up adjusts automatically for early or delayed arrivals.</li>
+        <li><b>Meet &amp; greet.</b> Your driver is waiting in arrivals with a welcome sign.</li>
+        <li><b>Direct transfer.</b> Straight to the hotel, with your room ready.</li>
+      </ol>
+      <a class="inline-cta" href="https://wa.me/2349028309397" target="_blank" rel="noopener">Arrange a pickup on WhatsApp <span>&rarr;</span></a>
+    </div>
   </div>
 </section>
 
@@ -2816,7 +3073,7 @@
 
     var sel = '#rooms .room-card, #amenities .amenity, #property-info .info-item,' +
               ' #location .location-wrap > *, #contact .contact-card,' +
-              ' .qr-section .patch, section .section-head';
+              ' .prose-split > *, .qr-section .patch, section .section-head';
     var vh = window.innerHeight || 800;
     var list = [];
     Array.prototype.forEach.call(document.querySelectorAll(sel), function(el){
