@@ -3116,6 +3116,12 @@
     }
     window.addEventListener('scroll', request, { passive:true });
     window.addEventListener('resize', request, { passive:true });
+    window.addEventListener('hashchange', request);
+    window.addEventListener('load', request);
+    /* Deep links (e.g. /about/ -> /#about) jump the page before or after this
+       runs, and that jump doesn't always fire a scroll event. Re-check on a
+       short ladder so a linked-to section is never left invisible. */
+    [60, 250, 700, 1500, 3000].forEach(function(ms){ setTimeout(request, ms); });
     request();
   })();
 
