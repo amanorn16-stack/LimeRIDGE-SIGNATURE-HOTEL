@@ -1,9 +1,30 @@
 {
   "redirects": [
-    {
-      "source": "/limeridge_site_v7.html",
-      "destination": "/",
-      "permanent": true
-    }
+    { "source": "/limeridge_site_v7.html", "destination": "/", "permanent": true },
+
+    { "source": "/about", "destination": "/#property-info", "permanent": true },
+    { "source": "/about/", "destination": "/#property-info", "permanent": true },
+
+    { "source": "/contact", "destination": "/#contact", "permanent": true },
+    { "source": "/contact/", "destination": "/#contact", "permanent": true },
+
+    { "source": "/room-listing-1", "destination": "/#rooms", "permanent": true },
+    { "source": "/room-listing-1/", "destination": "/#rooms", "permanent": true },
+    { "source": "/rooms", "destination": "/#rooms", "permanent": true },
+    { "source": "/room-listing-:n*", "destination": "/#rooms", "permanent": true },
+
+    { "source": "/product", "destination": "/#rooms", "permanent": true },
+    { "source": "/product/:slug*", "destination": "/#rooms", "permanent": true },
+    { "source": "/product-category/:slug*", "destination": "/#rooms", "permanent": true },
+
+    { "source": "/airport-taxi-service", "destination": "/#amenities", "permanent": true },
+    { "source": "/airport-taxi-service/", "destination": "/#amenities", "permanent": true },
+
+    { "source": "/restaurant", "destination": "/#amenities", "permanent": true },
+    { "source": "/restaurant/", "destination": "/#amenities", "permanent": true },
+
+    { "source": "/cart", "destination": "/#book", "permanent": true },
+    { "source": "/checkout", "destination": "/#book", "permanent": true },
+    { "source": "/my-account/:slug*", "destination": "/#book", "permanent": true }
   ]
 }
