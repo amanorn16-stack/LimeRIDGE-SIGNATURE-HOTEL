@@ -1764,10 +1764,12 @@
     .hero .eyebrow{ letter-spacing:2.1px; font-size:9.5px; }
     .hero .eyebrow::before{ width:18px; }
 
-    /* Let the month grids shrink so the next-month arrow isn't clipped off. */
+    /* Stack the two months so neither the grids nor the next-month arrow
+       get squeezed off the edge of a phone screen. */
     .calendar-panel{ padding:16px 12px; }
-    .cal-month{ min-width:0; }
-    .cal-months{ gap:18px; }
+    .cal-months{ flex-direction:column; gap:24px; flex-wrap:nowrap; }
+    .cal-month{ min-width:0; width:100%; flex:none; }
+    .cal-nav-row{ align-items:center; }
     .cal-nav-row{ gap:4px; }
     .cal-nav-btn{ width:30px; height:30px; font-size:11px; }
     .cal-day{ font-size:12px; border-radius:8px; }
@@ -1786,6 +1788,15 @@
     .fab-email{ display:none; }
     .fab{ width:46px; height:46px; }
     .floating-actions{ right:12px; bottom:12px; }
+
+    /* Logo, menu, currency and Book Now all have to fit one phone-width row. */
+    .navbar{ gap:8px; }
+    .navbar .util{ gap:8px; }
+    .navbar .util a.cta{ padding:9px 14px; font-size:12.5px; white-space:nowrap; }
+    .currency-btn{ padding:6px 9px; font-size:11.5px; gap:4px; }
+    .currency-btn .cur-ico{ font-size:12px; }
+    .nav-toggle{ width:36px; height:34px; padding:0 8px; }
+    .text-logo .tl-sub{ white-space:nowrap; }
 
     .media-pair{ gap:10px; }
     .stat-row{ gap:18px; }
