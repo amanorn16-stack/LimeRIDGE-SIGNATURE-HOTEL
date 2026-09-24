@@ -137,6 +137,9 @@
     font-family:var(--font-sans);
     background:var(--page-bg);
     color:var(--ink);
+    /* overflow-x:hidden on body makes it a scroll container, which silently
+       breaks smooth scrolling for anchor links and scrollIntoView. clip
+       contains the overflow without that side effect. */
     overflow-x:hidden;
     width:100%;
     line-height:1.55;
@@ -144,6 +147,7 @@
     -moz-osx-font-smoothing:grayscale;
     font-size:15px;
   }
+  @supports (overflow-x: clip){ body{ overflow-x:clip; } }
   button, input, select, textarea{ font-family:inherit; touch-action:manipulation; }
   img{ max-width:100%; display:block; }
   a{ color:inherit; text-decoration:none; }
@@ -3132,7 +3136,7 @@
         var el = null;
         try { el = document.querySelector(landedHash); } catch(e){ return; }
         if(!el) return;
-        el.scrollIntoView({ block:'start' });
+        el.scrollIntoView({ block:'start', behavior:'instant' });
         request();
       };
       var cancel = function(){ landedHash = ''; };
