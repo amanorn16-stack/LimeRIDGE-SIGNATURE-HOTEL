@@ -3118,11 +3118,32 @@
     window.addEventListener('resize', request, { passive:true });
     window.addEventListener('hashchange', request);
     window.addEventListener('load', request);
-    /* Deep links (e.g. /about/ -> /#about) jump the page before or after this
-       runs, and that jump doesn't always fire a scroll event. Re-check on a
-       short ladder so a linked-to section is never left invisible. */
+    /* Re-check on a short ladder so a linked-to section is never left invisible. */
     [60, 250, 700, 1500, 3000].forEach(function(ms){ setTimeout(request, ms); });
     request();
+
+    /* A redirected deep link (/about/ -> /#about) lands with a hash, but the
+       browser's own anchor jump gets lost once images and fonts finish and the
+       page reflows — visitors from search would land on the hero instead of the
+       section they asked for. Re-apply it ourselves once layout has settled. */
+    var landedHash = location.hash;
+    if(landedHash && landedHash.length > 1){
+      var jump = function(){
+        var el = null;
+        try { el = document.querySelector(landedHash); } catch(e){ return; }
+        if(!el) return;
+        el.scrollIntoView({ block:'start' });
+        request();
+      };
+      var cancel = function(){ landedHash = ''; };
+      /* If the visitor starts scrolling themselves, stop interfering. */
+      window.addEventListener('wheel', cancel, { passive:true, once:true });
+      window.addEventListener('touchstart', cancel, { passive:true, once:true });
+      [120, 450, 1100].forEach(function(ms){
+        setTimeout(function(){ if(landedHash) jump(); }, ms);
+      });
+      window.addEventListener('load', function(){ if(landedHash) jump(); });
+    }
   })();
 
 </script>
