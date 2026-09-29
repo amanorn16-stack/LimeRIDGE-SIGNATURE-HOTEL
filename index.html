@@ -1813,6 +1813,12 @@
     .cal-day .cal-price{ display:none; }
     .cal-day{ font-size:12.5px; }
   }
+
+  /* Footer credits */
+  footer .footer-sep{ margin:0 10px; opacity:.5; }
+  footer a{ color:rgba(255,255,255,.8); border-bottom:1px solid rgba(255,255,255,.25); transition:color .2s, border-color .2s; }
+  footer a:hover{ color:#fff; border-bottom-color:var(--gold); }
+  footer{ line-height:1.9; }
 </style>
 </head>
 <body>
@@ -2311,7 +2317,7 @@
 </section>
 
 <footer>
-  &copy; 2026 LimeRidge Signature Hotel. All rights reserved.
+  &copy; 2026 LimeRidge Signature Hotel. All rights reserved.<span class="footer-sep">&middot;</span>Designed by Kevin Ok<span class="footer-sep">&middot;</span>Developed by <a href="https://amanornsolutions.com" target="_blank" rel="noopener">amanornsolutions.com</a>
 </footer>
 
 <div class="modal-overlay" id="checkoutModal" onclick="closeCheckout()">
