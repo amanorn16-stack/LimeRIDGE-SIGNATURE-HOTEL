@@ -2075,11 +2075,11 @@
   </div>
 
   <div class="room-card" data-room="City View">
-    <div class="room-photo">
-      <img class="room-photo-img" src="city%20view/PHOTO-2026-07-28-07-47-46.jpg" alt="City View Room overlooking Lagos at LimeRidge Signature Hotel, Ikeja GRA" loading="lazy">
-      <div class="arrow left">&#10094;</div>
-      <div class="arrow right">&#10095;</div>
-      <div class="dots"><i class="active"></i><i></i><i></i><i></i></div>
+    <div class="room-photo" data-photos="city%20view/city-view-1.jpg|city%20view/city-view-2.jpg|city%20view/city-view-3.jpg">
+      <img class="room-photo-img" src="city%20view/city-view-1.jpg" alt="City View Room lounge with kitchenette at LimeRidge Signature Hotel, Ikeja GRA" loading="lazy" style="object-position:center 62%">
+      <div class="arrow left" role="button" aria-label="Previous photo">&#10094;</div>
+      <div class="arrow right" role="button" aria-label="Next photo">&#10095;</div>
+      <div class="dots"><i class="active"></i><i></i><i></i></div>
     </div>
     <div class="room-body">
       <h3>City View</h3>
@@ -3323,5 +3323,23 @@
 
 </script>
 
+
+<script>
+/* Room photo sliders: any .room-photo with data-photos gets working arrows, dots and swipe */
+(function(){
+  document.querySelectorAll('.room-photo[data-photos]').forEach(function(box){
+    var list=box.getAttribute('data-photos').split('|'), img=box.querySelector('img'), dots=box.querySelectorAll('.dots i'), i=0;
+    var alts=['City View Room lounge with kitchenette at LimeRidge Signature Hotel, Ikeja GRA','City View Room living area at LimeRidge Signature Hotel, Ikeja GRA','City View Room private terrace overlooking Ikeja GRA, Lagos'];
+    list.forEach(function(src){ var p=new Image(); p.src=src; });
+    function show(n){ i=(n+list.length)%list.length; img.src=list[i]; if(alts[i]) img.alt=alts[i]; dots.forEach(function(d,k){ d.classList.toggle('active',k===i); }); }
+    function go(d){ return function(e){ e.preventDefault(); e.stopPropagation(); show(i+d); }; }
+    var l=box.querySelector('.arrow.left'), r=box.querySelector('.arrow.right');
+    if(l) l.addEventListener('click',go(-1)); if(r) r.addEventListener('click',go(1));
+    dots.forEach(function(d,k){ d.style.cursor='pointer'; d.addEventListener('click',function(e){ e.stopPropagation(); show(k); }); });
+    var x0=null; box.addEventListener('touchstart',function(e){ x0=e.touches[0].clientX; },{passive:true});
+    box.addEventListener('touchend',function(e){ if(x0===null) return; var dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) show(i+(dx<0?1:-1)); x0=null; });
+  });
+})();
+</script>
 </body>
 </html>
