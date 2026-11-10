@@ -1367,7 +1367,6 @@
   .pm-badge.bank{ background:var(--green); color:#fff; border-color:var(--green); }
   .pm-badge.card{ background:var(--green); color:#fff; border-color:var(--green); }
   .pm-badge.gpay{ background:var(--green); color:#fff; border-color:var(--green); }
-  .pm-badge.paypal{ background:#FFC439; color:#003087; border-color:#FFC439; font-style:italic; }
   .pm-badge.applepay{ background:#000; color:#fff; border-color:#000; }
 
   /* Bank transfer */
@@ -2365,10 +2364,6 @@
             <span class="pm-badge gpay" style="background:var(--green); color:#fff; border-color:var(--green);">Available</span>
           </label>
           <label class="payment-method-row">
-            <span class="pm-left"><input type="radio" name="paymethod" onchange="selectPaymentMethod('paypal')"> PayPal</span>
-            <span class="pm-badge paypal">PayPal</span>
-          </label>
-          <label class="payment-method-row">
             <span class="pm-left"><input type="radio" name="paymethod" onchange="selectPaymentMethod('applepay')"> Apple Pay</span>
             <span class="pm-badge applepay">&#63743; Pay</span>
           </label>
@@ -2925,9 +2920,7 @@
     document.getElementById('checkoutModal').classList.add('active');
   }
 
-  const methodNotices = {
-    paypal: "PayPal isn't supported by our payment provider yet. Please choose Card, Bank Transfer, or message us on WhatsApp."
-  };
+  const methodNotices = {};
 
   const PAYSTACK_PUBLIC_KEY = "pk_test_037278ba2483d797f35d92c4f62a5e773ebe5ee8";
   const FLUTTERWAVE_PUBLIC_KEY = "FLWPUBK_TEST-52d7177a872d75acd73ded282be287f8-X";
