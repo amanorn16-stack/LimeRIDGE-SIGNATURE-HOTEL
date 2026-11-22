@@ -94,6 +94,7 @@
   .chip.wa{ color:#1E7C45; }
   .ref{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px; word-break:break-all; }
   .meta{ font-size:12px; color:var(--muted); margin-top:4px; }
+  .meta.note{ color:var(--amber); background:var(--amber-soft); border-radius:8px; padding:6px 8px; font-weight:600; }
   .badge{ display:inline-block; border-radius:999px; padding:3px 10px; font-size:11.5px; font-weight:700; white-space:nowrap; }
   .badge.pending{ background:var(--amber-soft); color:var(--amber); }
   .badge.soon{ background:var(--red-soft); color:var(--red); }
@@ -382,7 +383,8 @@
         '<div class="k">Expected transfer</div>' +
         '<div class="amt">' + (amt ? naira(amt) : '&mdash;') + (amt ? '<small>' + naira(RATES[b.roomType]) + ' &times; ' + n + '</small>' : '') + '</div>' +
         '<div class="meta">Ref <span class="ref">' + ref + '</span> <button class="chip" type="button" data-act="copy" data-ref="' + ref + '" title="Copy reference">Copy</button></div>' +
-        '<div class="meta">Requested ' + esc(when(Date.parse(b.recordedAt))) + '</div>' +
+        '<div class="meta">Requested ' + esc(when(Date.parse(b.recordedAt))) + (b.source && b.source !== 'bank_transfer' ? ' &middot; via ' + esc(b.source) : '') + '</div>' +
+        (b.note ? '<div class="meta note">&#9888; ' + esc(b.note) + '</div>' : '') +
         '<div class="meta"><span class="badge ' + s.cls + '">' + esc(s.label) + '</span></div>' +
       '</div>' +
       '<div class="acts">' +

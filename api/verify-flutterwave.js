@@ -4,17 +4,13 @@
 //
 // Requires an environment variable FLUTTERWAVE_SECRET_KEY to be set on the
 // Vercel project (Project Settings -> Environment Variables).
+//
+// The booking is written directly from here (not via the public /api/book),
+// using the room, dates and amount Flutterwave reports for the verified
+// transaction. If the amount paid is less than the stay costs, the room is
+// held for staff review instead of being marked as sold.
 
-async function recordBooking(roomType, checkin, checkout, reference, source, guest, req) {
-  const proto = req.headers['x-forwarded-proto'] || 'https';
-  const host = req.headers.host;
-  await fetch(proto + '://' + host + '/api/book', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ roomType, checkin, checkout, reference, source, ...guest })
-  });
-}
-
+const { getRedisConfig, recordVerifiedPayment } = require('./_booking');
 module.exports = async (req, res) => {
   let transactionId = null;
   if (req.query && req.query.transaction_id) {
@@ -46,22 +42,34 @@ module.exports = async (req, res) => {
     const data = await response.json();
 
     if (data && data.status === 'success' && data.data && data.data.status === 'successful') {
+      let bookingStatus = 'not-recorded';
       try {
         const meta = data.data.meta || data.data.meta_data || data.data.metadata || {};
         const customer = data.data.customer || {};
-        if (meta.room && meta.checkin && meta.checkout) {
-          const guest = {
-            guestName: customer.name || meta.guest_name || '',
-            guestEmail: customer.email || '',
-            guestPhone: customer.phone_number || meta.guest_phone || ''
-          };
-          await recordBooking(meta.room, meta.checkin, meta.checkout, data.data.tx_ref, 'flutterwave', guest, req);
+        const redisConfig = getRedisConfig();
+        if (redisConfig && meta.room && meta.checkin && meta.checkout) {
+          const result = await recordVerifiedPayment(redisConfig, {
+            roomType: meta.room,
+            checkin: meta.checkin,
+            checkout: meta.checkout,
+            reference: data.data.tx_ref,
+            source: 'flutterwave',
+            amountPaid: Number(data.data.amount) || 0, // Flutterwave reports naira
+            currency: data.data.currency,
+            guest: {
+              guestName: customer.name || meta.guest_name || '',
+              guestEmail: customer.email || '',
+              guestPhone: customer.phone_number || meta.guest_phone || ''
+            }
+          });
+          bookingStatus = result.status === 'duplicate' ? ((result.booking && result.booking.status) || 'confirmed') : result.status;
         }
       } catch (bookingErr) {
         console.error('Failed to record booking after Flutterwave payment:', bookingErr);
       }
       res.status(200).json({
         success: true,
+        booking: bookingStatus,
         status: data.data.status,
         amount: data.data.amount,
         currency: data.data.currency,

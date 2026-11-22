@@ -3105,12 +3105,16 @@
       })
     }).then(function(r){ return r.json(); })
       .then(function(result){
+        if(result && result.code === 'no-availability'){
+          alert("Sorry, this room has just been booked for some of your dates. Please choose other dates or another room. If you have already sent a transfer, message us on WhatsApp and we'll sort it out.");
+          return;
+        }
         if(result && result.success && result.holdHours){
           document.getElementById('confirmMsg').textContent = "We've received your booking request (ref: " + reference + "). We're holding this room for " + result.holdHours + " hours pending confirmation of your transfer — please send your proof of payment on WhatsApp now so we can confirm it before the hold expires.";
         }
+        confirmBooking();
       })
-      .catch(function(){ /* Bank transfer isn't auto-verified anyway; don't block on this. */ })
-      .finally(function(){ confirmBooking(); });
+      .catch(function(){ /* Bank transfer isn't auto-verified anyway; don't block on this. */ confirmBooking(); });
   }
 
   function copyAcc(num, btn){
