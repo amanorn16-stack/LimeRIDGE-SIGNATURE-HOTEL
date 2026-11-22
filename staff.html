@@ -366,7 +366,9 @@
       if(s.charAt(0) === '+'){
         p = L.parsePhoneNumberFromString(s);
         if(p) info = { e164:p.number, display:p.formatInternational(), country:p.country, valid:p.isValid(), detected:false };
-      } else {
+      } else if(s.replace(/\D/g, '').length >= 9){
+        // Too-short numbers are left alone: some countries accept very short
+        // numbers, which would make a typo look like a valid foreign number.
         for(var i = 0; i < GUESS_ORDER.length && !info; i++){
           p = L.parsePhoneNumberFromString(s, GUESS_ORDER[i]);
           if(p && p.isValid()) info = { e164:p.number, display:p.formatInternational(), country:p.country, valid:true, detected:GUESS_ORDER[i] !== 'NG' };
