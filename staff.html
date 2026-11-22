@@ -192,7 +192,7 @@
   }
 
   async function apiGet(action, extra){
-    const res = await fetch('/api/admin?action=' + action + '&key=' + encodeURIComponent(ADMIN_KEY) + (extra || ''));
+    const res = await fetch('/api/admin?action=' + action + (extra || ''), { headers: { 'x-admin-key': ADMIN_KEY } });
     if(res.status === 401){
       throw new Error('Admin key rejected. Click "Change key" and try again.');
     }
@@ -230,8 +230,8 @@
     const rows = bookings.map(b => {
       const canCheckout = showCheckout && b.status === 'confirmed';
       const actionButtons = [];
-      if(canCheckout) actionButtons.push('<button class="btn-checkout" onclick="promptCheckout(\'' + b.reference + '\')">Check out</button>');
-      if(showDelete) actionButtons.push('<button class="btn-delete" onclick="promptDelete(\'' + b.reference + '\')">Delete</button>');
+      if(canCheckout) actionButtons.push('<button class="btn-checkout" data-act="checkout" data-ref="' + escapeHtml(b.reference) + '">Check out</button>');
+      if(showDelete) actionButtons.push('<button class="btn-delete" data-act="delete" data-ref="' + escapeHtml(b.reference) + '">Delete</button>');
       return '<tr>' +
         '<td>' + escapeHtml(b.roomType) + '</td>' +
         '<td>' + guestCell(b) + '</td>' +
@@ -251,9 +251,9 @@
     if(input === null) return;
     const checkoutDate = (input.trim() || today);
     try{
-      const res = await fetch('/api/admin?action=checkout&key=' + encodeURIComponent(ADMIN_KEY), {
+      const res = await fetch('/api/admin?action=checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
         body: JSON.stringify({ reference: reference, checkoutDate: checkoutDate })
       });
       const data = await res.json();
@@ -274,9 +274,9 @@
   async function promptDelete(reference){
     if(!confirm('Permanently delete booking ' + reference + '? This releases any inventory it still holds and cannot be undone.')) return;
     try{
-      const res = await fetch('/api/admin?action=delete&key=' + encodeURIComponent(ADMIN_KEY), {
+      const res = await fetch('/api/admin?action=delete', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
         body: JSON.stringify({ reference: reference })
       });
       const data = await res.json();
@@ -339,8 +339,8 @@
           '<td>' + fmtDate(b.expiresAt ? new Date(b.expiresAt * 1000).toISOString() : '') + '</td>' +
           '<td><span class="badge ' + (expired ? 'expired' : 'pending') + '">' + (expired ? 'Expired' : 'Pending') + '</span></td>' +
           '<td><div class="row-actions">' +
-            '<button class="btn-confirm" onclick="act(\'confirm\', \'' + b.reference + '\')">Confirm</button>' +
-            '<button class="btn-cancel" onclick="act(\'cancel\', \'' + b.reference + '\')">Cancel</button>' +
+            '<button class="btn-confirm" data-act="confirm" data-ref="' + escapeHtml(b.reference) + '">Confirm</button>' +
+            '<button class="btn-cancel" data-act="cancel" data-ref="' + escapeHtml(b.reference) + '">Cancel</button>' +
           '</div></td>' +
         '</tr>';
       }).join('');
@@ -353,9 +353,9 @@
   async function act(action, reference){
     if(action === 'cancel' && !confirm('Release this room immediately?')) return;
     try{
-      const res = await fetch('/api/admin?action=' + action + '&key=' + encodeURIComponent(ADMIN_KEY), {
+      const res = await fetch('/api/admin?action=' + action, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
         body: JSON.stringify({ reference: reference })
       });
       const data = await res.json();
@@ -398,6 +398,18 @@
       statusEl.textContent = e.message || 'Could not load availability grid.';
     }
   }
+
+  // Row buttons carry the reference in a data attribute (never inside inline
+  // JavaScript), so a booking reference can't inject code into this page.
+  document.getElementById('appArea').addEventListener('click', function(e){
+    const btn = e.target.closest('button[data-act]');
+    if(!btn) return;
+    const ref = btn.getAttribute('data-ref');
+    const a = btn.getAttribute('data-act');
+    if(a === 'checkout') promptCheckout(ref);
+    else if(a === 'delete') promptDelete(ref);
+    else if(a === 'confirm' || a === 'cancel') act(a, ref);
+  });
 
   if(ADMIN_KEY){ showApp(); }
 </script>

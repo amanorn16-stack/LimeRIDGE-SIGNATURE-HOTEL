@@ -6,16 +6,27 @@
 //
 // Protected by a shared secret. Requires an environment variable ADMIN_KEY
 // to be set on the Vercel project (Project Settings -> Environment Variables)
-// -- pick any private passphrase. Pass it as ?key=... or header x-admin-key.
+// -- pick any private passphrase. Send it in the x-admin-key header
+// (preferred: it stays out of URLs and request logs) or as ?key=... .
 //
-// GET  /api/admin?action=list&key=...              pending holds only
-// GET  /api/admin?action=list-all&key=...           every booking (confirmed+pending+cancelled)
-// GET  /api/admin?action=today&key=...              today's arrivals & departures (Africa/Lagos)
-// GET  /api/admin?action=grid&key=...&days=14       per-room-type remaining-inventory grid
-// POST /api/admin?action=confirm&key=...   body: { reference }
-// POST /api/admin?action=cancel&key=...    body: { reference }
-// POST /api/admin?action=checkout&key=...  body: { reference, checkoutDate? }
-// POST /api/admin?action=delete&key=...    body: { reference }  -- permanent, releases any held inventory
+// GET  /api/admin?action=list              pending holds only
+// GET  /api/admin?action=list-all           every booking (confirmed+pending+cancelled)
+// GET  /api/admin?action=today              today's arrivals & departures (Africa/Lagos)
+// GET  /api/admin?action=grid&days=14       per-room-type remaining-inventory grid
+// POST /api/admin?action=confirm   body: { reference, force? }  -- 409 if the room is full on any night, unless force
+// POST /api/admin?action=cancel    body: { reference }
+// POST /api/admin?action=checkout  body: { reference, checkoutDate? }
+// POST /api/admin?action=delete    body: { reference }  -- permanent, releases any held inventory
+
+const crypto = require('crypto');
+
+// Constant-time comparison so the key can't be guessed from response timing.
+function keysMatch(provided, expected) {
+  if (typeof provided !== 'string' || typeof expected !== 'string') return false;
+  const a = crypto.createHash('sha256').update(provided).digest();
+  const b = crypto.createHash('sha256').update(expected).digest();
+  return crypto.timingSafeEqual(a, b);
+}
 
 const ROOM_INVENTORY = {
   'classic': 50,
@@ -120,8 +131,8 @@ module.exports = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server is not configured with an ADMIN_KEY yet. Add ADMIN_KEY in Vercel project settings.' });
     return;
   }
-  const providedKey = params.get('key') || req.headers['x-admin-key'];
-  if (providedKey !== adminKey) {
+  const providedKey = req.headers['x-admin-key'] || params.get('key');
+  if (!keysMatch(providedKey, adminKey)) {
     res.status(401).json({ success: false, message: 'Invalid or missing admin key' });
     return;
   }
@@ -299,6 +310,40 @@ module.exports = async (req, res) => {
       }
       const slug = slugify(record.roomType);
       const nights = datesBetween(record.checkin, record.checkout).slice(0, -1);
+
+      // Overbooking guard. If the hold has expired, the room may have been
+      // sold to someone else since, so check every night still has a free
+      // unit (not counting this booking's own hold if it is still active).
+      // Staff can override with { force: true } once they have checked.
+      const inventory = ROOM_INVENTORY[slug];
+      if (inventory !== undefined && !(body && body.force === true)) {
+        const nowSec = Math.floor(Date.now() / 1000);
+        const checks = [];
+        nights.forEach(d => {
+          checks.push(['GET', 'booked:' + slug + ':' + d]);
+          checks.push(['ZCOUNT', 'hold:' + slug + ':' + d, nowSec, '+inf']);
+          checks.push(['ZSCORE', 'hold:' + slug + ':' + d, reference]);
+        });
+        const checkRes = await redisPipeline(redisConfig, checks);
+        const fullNights = [];
+        nights.forEach((d, i) => {
+          const booked = parseInt((checkRes[i * 3] && checkRes[i * 3].result) || '0', 10) || 0;
+          const held = parseInt((checkRes[i * 3 + 1] && checkRes[i * 3 + 1].result) || '0', 10) || 0;
+          const ownScore = checkRes[i * 3 + 2] && checkRes[i * 3 + 2].result;
+          const ownHoldActive = ownScore !== null && ownScore !== undefined && Number(ownScore) >= nowSec ? 1 : 0;
+          if (inventory - booked - (held - ownHoldActive) < 1) fullNights.push(d);
+        });
+        if (fullNights.length > 0) {
+          res.status(409).json({
+            success: false,
+            code: 'no-availability',
+            fullNights,
+            message: record.roomType + ' is fully booked on ' + fullNights.join(', ') + '. Confirming would overbook.'
+          });
+          return;
+        }
+      }
+
       const commands = [];
       nights.forEach(d => {
         commands.push(['INCR', 'booked:' + slug + ':' + d]);
