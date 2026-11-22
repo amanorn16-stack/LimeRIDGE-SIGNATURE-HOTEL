@@ -4,415 +4,767 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>LimeRidge — Staff Hub</title>
+<meta name="theme-color" content="#6E1F2E">
+<title>Staff Hub · LimeRidge</title>
 <link rel="icon" href="favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
-  :root{ --maroon:#7a2333; --maroon-dark:#5c1a26; --green:#7cb342; --gold:#c79b4b; --ink:#1d1d1d; --muted:#6b6b6b; --line:#e4e2dd; --page-bg:#f4f4f2; }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{ font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; background:var(--page-bg); color:var(--ink); padding:20px; }
-  h1{ font-size:19px; color:var(--maroon); margin-bottom:2px; }
-  .sub{ font-size:12.5px; color:var(--muted); margin-bottom:18px; }
-  .key-box{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px; max-width:420px; margin-bottom:20px; }
-  .key-box input{ width:100%; border:1px solid var(--line); border-radius:6px; padding:9px 10px; font-size:14px; margin-bottom:10px; }
-  .key-box button{ background:var(--maroon); color:#fff; border:none; border-radius:20px; padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer; }
+  :root{
+    --maroon:#6E1F2E; --maroon-dark:#551622; --maroon-soft:rgba(110,31,46,.08);
+    --gold:#C0932F; --green:#4F8A3D; --green-soft:#EAF3E5; --red:#B23B3B; --red-soft:#FBEDED;
+    --amber:#9A6200; --amber-soft:#FFF4DF; --blue:#3B5BAB; --blue-soft:#EEF2FB;
+    --ink:#17130F; --ink-2:#3A332C; --muted:#736C62; --line:#E8E2D7; --line-2:#F0EBE2; --page-bg:#FBF9F5; --card:#fff;
+    --shadow:0 2px 10px rgba(23,19,15,.05), 0 1px 2px rgba(23,19,15,.04);
+    --r:14px;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; background:var(--page-bg); color:var(--ink); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button, input, select{ font-family:inherit; }
+  a{ color:inherit; }
+  :focus-visible{ outline:2px solid var(--maroon); outline-offset:2px; border-radius:6px; }
+  [hidden]{ display:none !important; }
 
-  .tabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; border-bottom:1px solid var(--line); padding-bottom:0; }
-  .tab-btn{ background:none; border:none; padding:10px 14px; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
-  .tab-btn.active{ color:var(--maroon); border-bottom:2px solid var(--maroon); }
-  .tab-panel{ display:none; }
-  .tab-panel.active{ display:block; }
+  /* Top bar + tabs */
+  .topbar{ background:rgba(251,249,245,.94); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20; }
+  .topbar-in{ max-width:1180px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 20px 0; flex-wrap:wrap; }
+  .brand{ line-height:1; padding-bottom:12px; }
+  .brand .b1{ font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:700; color:var(--green); }
+  .brand .b2{ font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:700; color:var(--maroon); }
+  .brand .b3{ font-size:9px; letter-spacing:2.6px; text-transform:uppercase; color:var(--muted); font-weight:600; margin-top:3px; }
+  .tabs{ display:flex; gap:2px; overflow-x:auto; scrollbar-width:none; order:3; width:100%; }
+  .tabs::-webkit-scrollbar{ display:none; }
+  .tab{ background:none; border:none; padding:10px 14px 12px; font-size:13.5px; font-weight:600; color:var(--muted); cursor:pointer; border-bottom:2.5px solid transparent; white-space:nowrap; display:inline-flex; align-items:center; gap:7px; }
+  .tab:hover{ color:var(--ink); }
+  .tab.active{ color:var(--maroon); border-bottom-color:var(--maroon); }
+  .count{ display:inline-block; min-width:20px; padding:1px 7px; border-radius:999px; background:var(--line-2); color:var(--ink-2); font-size:11px; font-weight:700; text-align:center; }
+  .count.hot{ background:var(--amber); color:#fff; }
+  .pill{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:12.5px; font-weight:600; color:var(--ink-2); cursor:pointer; text-decoration:none; white-space:nowrap; }
+  .pill:hover{ border-color:var(--maroon); color:var(--maroon); }
+  .pill[disabled]{ opacity:.55; cursor:progress; }
+  .topright{ display:flex; gap:8px; align-items:center; padding-bottom:12px; }
 
-  .toolbar{ display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
-  .toolbar button{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:7px 14px; font-size:12.5px; font-weight:600; cursor:pointer; color:var(--ink); }
-  .toolbar select{ border:1px solid var(--line); border-radius:16px; padding:7px 12px; font-size:12.5px; font-weight:600; background:#fff; color:var(--ink); }
+  main{ max-width:1180px; margin:0 auto; padding:24px 20px 40px; }
+  h1{ font-family:'Playfair Display',Georgia,serif; font-size:26px; letter-spacing:-.2px; }
+  .lede{ color:var(--muted); font-size:13.5px; margin-top:4px; max-width:680px; }
+  h2.section{ font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-2); margin:24px 0 10px; display:flex; align-items:center; gap:8px; }
 
-  table{ width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; border:1px solid var(--line); margin-bottom:10px; }
-  th, td{ text-align:left; padding:10px 12px; font-size:12.5px; border-bottom:1px solid var(--line); }
-  th{ background:#faf9f7; color:var(--muted); font-weight:700; text-transform:uppercase; font-size:10.5px; letter-spacing:0.5px; }
+  /* Login */
+  .login{ max-width:400px; margin:48px auto; background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:24px; box-shadow:var(--shadow); }
+  .login h2{ font-family:'Playfair Display',Georgia,serif; font-size:20px; margin-bottom:4px; }
+  .login p{ color:var(--muted); font-size:13px; margin-bottom:16px; }
+  .login label{ font-size:12px; font-weight:600; color:var(--ink-2); display:block; margin-bottom:6px; }
+  .field{ width:100%; border:1px solid var(--line); border-radius:10px; padding:11px 12px; font-size:15px; background:#fff; color:var(--ink); }
+  .field:focus{ outline:none; border-color:var(--maroon); box-shadow:0 0 0 3px var(--maroon-soft); }
+  .login .err{ color:var(--red); font-size:12.5px; min-height:18px; margin:8px 0 4px; }
+
+  .btn{ border:none; border-radius:999px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition:background .15s, opacity .15s, transform .15s; white-space:nowrap; }
+  .btn:active{ transform:translateY(1px); }
+  .btn[disabled]{ opacity:.55; cursor:progress; }
+  .btn-primary{ background:var(--maroon); color:#fff; } .btn-primary:hover{ background:var(--maroon-dark); }
+  .btn-confirm{ background:var(--green); color:#fff; } .btn-confirm:hover{ background:#3f7330; }
+  .btn-ghost{ background:#fff; color:var(--red); border:1px solid #E6B8B8; } .btn-ghost:hover{ background:var(--red-soft); }
+  .btn-gold{ background:var(--gold); color:#fff; } .btn-gold:hover{ background:#a87f25; }
+  .btn-plain{ background:#fff; color:var(--ink-2); border:1px solid var(--line); }
+  .btn-sm{ padding:6px 12px; font-size:12px; }
+  .btn-block{ width:100%; }
+
+  /* Stats */
+  .summary{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin:20px 0 16px; }
+  .stat{ background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px; box-shadow:var(--shadow); text-align:left; font:inherit; color:inherit; }
+  button.stat{ cursor:pointer; } button.stat:hover{ border-color:var(--maroon); }
+  .stat .n{ font-size:22px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .stat .l{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; font-weight:600; margin-top:2px; }
+  .stat.warn .n{ color:var(--amber); } .stat.bad .n{ color:var(--red); } .stat.good .n{ color:var(--green); }
+  .stat.money .n{ color:var(--maroon); font-size:19px; padding-top:3px; }
+
+  .controls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+  .search{ flex:1 1 260px; position:relative; }
+  .search input{ width:100%; border:1px solid var(--line); border-radius:999px; padding:9px 14px 9px 36px; font-size:13.5px; background:#fff; }
+  .search input:focus{ outline:none; border-color:var(--maroon); box-shadow:0 0 0 3px var(--maroon-soft); }
+  .search svg{ position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--muted); }
+  .select{ border:1px solid var(--line); border-radius:999px; padding:8px 12px; font-size:12.5px; font-weight:600; background:#fff; color:var(--ink-2); }
+  .updated{ font-size:12px; color:var(--muted); white-space:nowrap; }
+
+  /* Tables */
+  .table-wrap{ background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow-x:auto; }
+  table{ width:100%; border-collapse:collapse; }
+  th, td{ text-align:left; padding:11px 14px; font-size:13px; border-bottom:1px solid var(--line-2); vertical-align:middle; }
+  th{ background:#FAF8F4; color:var(--muted); font-weight:700; text-transform:uppercase; font-size:10.5px; letter-spacing:.6px; white-space:nowrap; }
   tr:last-child td{ border-bottom:none; }
+  td .sub{ color:var(--muted); font-size:11.5px; }
+  .ref{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12px; word-break:break-all; }
+  .row-acts{ display:flex; gap:6px; justify-content:flex-end; }
+  .grid-table th, .grid-table td{ text-align:center; white-space:nowrap; padding:9px 10px; }
+  .grid-table th:first-child, .grid-table td:first-child{ text-align:left; position:sticky; left:0; background:#fff; }
+  .grid-table th:first-child{ background:#FAF8F4; }
+  .cell-full{ color:var(--red); font-weight:700; background:var(--red-soft); }
+  .cell-low{ color:var(--amber); font-weight:700; background:var(--amber-soft); }
+  .cell-ok{ color:var(--green); }
 
-  .badge{ display:inline-block; border-radius:12px; padding:3px 10px; font-size:11px; font-weight:700; }
-  .badge.pending{ background:#fff4e0; color:#a06600; }
-  .badge.confirmed{ background:#eaf4e2; color:#4a7c2b; }
-  .badge.cancelled{ background:#f2f2f2; color:var(--muted); }
-  .badge.expired{ background:#f2f2f2; color:var(--muted); }
-  .badge.checked-out{ background:#eef2fb; color:#3b5bab; }
+  .badge{ display:inline-block; border-radius:999px; padding:3px 10px; font-size:11.5px; font-weight:700; white-space:nowrap; text-transform:capitalize; }
+  .badge.pending{ background:var(--amber-soft); color:var(--amber); }
+  .badge.soon{ background:var(--red-soft); color:var(--red); text-transform:none; }
+  .badge.expired, .badge.cancelled{ background:#F1EFEB; color:var(--muted); }
+  .badge.confirmed{ background:var(--green-soft); color:var(--green); }
+  .badge.checked-out{ background:var(--blue-soft); color:var(--blue); }
+  .badge.hold{ text-transform:none; }
 
-  .row-actions{ display:flex; gap:6px; }
-  .row-actions button{ border:none; border-radius:14px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer; }
-  .btn-confirm{ background:var(--green); color:#fff; }
-  .btn-cancel{ background:#fff; color:#b23b3b; border:1px solid #e6b8b8 !important; }
-  .btn-checkout{ background:var(--gold); color:#fff; border:none; border-radius:14px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer; }
-  .btn-delete{ background:#fff; color:#8a8a8a; border:1px solid var(--line); border-radius:14px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer; }
+  /* Pending transfer cards */
+  .list{ display:grid; gap:12px; }
+  .bk{ background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); display:grid; grid-template-columns:1.25fr 1fr 1fr auto; gap:16px; padding:16px 18px; align-items:center; border-left:4px solid var(--amber); }
+  .bk.expired{ border-left-color:var(--muted); background:#FDFCFA; }
+  .bk.soon{ border-left-color:var(--red); }
+  .bk .room{ font-weight:700; font-size:15px; }
+  .bk .dates{ color:var(--ink-2); font-size:13px; }
+  .bk .nights{ color:var(--muted); font-size:12px; }
+  .bk .amt{ font-weight:700; color:var(--maroon); font-size:16px; font-variant-numeric:tabular-nums; }
+  .bk .amt small{ color:var(--muted); font-weight:500; font-size:11.5px; display:block; }
+  .k{ font-size:10.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); font-weight:600; margin-bottom:2px; }
+  .guest .name{ font-weight:600; }
+  .none{ color:var(--muted); font-style:italic; }
+  .links{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .chip{ display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:4px 10px; border-radius:999px; border:1px solid var(--line); background:#fff; text-decoration:none; color:var(--ink-2); cursor:pointer; }
+  .chip:hover{ border-color:var(--maroon); color:var(--maroon); }
+  .chip.wa{ color:#1E7C45; }
+  .meta{ font-size:12px; color:var(--muted); margin-top:4px; }
+  .meta.note{ color:var(--amber); background:var(--amber-soft); border-radius:8px; padding:6px 8px; font-weight:600; }
+  .acts{ display:flex; flex-direction:column; gap:8px; min-width:120px; }
 
-  .empty-note{ font-size:13px; color:var(--muted); padding:16px; background:#fff; border:1px solid var(--line); border-radius:10px; }
-  .status-msg{ font-size:12.5px; margin-bottom:12px; color:var(--muted); }
+  .empty{ text-align:center; background:var(--card); border:1px dashed var(--line); border-radius:var(--r); padding:32px 20px; color:var(--muted); }
+  .empty .big{ font-size:26px; margin-bottom:6px; }
+  .empty strong{ display:block; color:var(--ink); font-size:15px; margin-bottom:2px; }
+  .notice{ background:var(--red-soft); color:var(--red); border:1px solid #EFC9C9; border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:14px; }
 
-  .cards-row{ display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
-  .stat-card{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:14px 18px; min-width:120px; }
-  .stat-card .num{ font-size:22px; font-weight:800; color:var(--maroon); }
-  .stat-card .label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+  /* Dialog */
+  dialog{ border:none; border-radius:18px; padding:0; width:min(440px, calc(100vw - 32px)); box-shadow:0 30px 80px rgba(23,19,15,.25); color:var(--ink); }
+  dialog::backdrop{ background:rgba(23,19,15,.45); }
+  .dlg{ padding:22px; }
+  .dlg h3{ font-family:'Playfair Display',Georgia,serif; font-size:20px; margin-bottom:10px; }
+  .dlg .rows{ background:var(--page-bg); border:1px solid var(--line); border-radius:12px; padding:10px 14px; margin-bottom:12px; }
+  .dlg .row{ display:flex; justify-content:space-between; gap:12px; font-size:13px; padding:4px 0; }
+  .dlg .row span:first-child{ color:var(--muted); }
+  .dlg .row span:last-child{ font-weight:600; text-align:right; word-break:break-word; }
+  .dlg .warn{ background:var(--amber-soft); color:#6E4700; border-radius:10px; padding:10px 12px; font-size:12.5px; margin-bottom:12px; }
+  .dlg .warn.red{ background:var(--red-soft); color:var(--red); }
+  .dlg p.q{ font-size:13.5px; margin-bottom:16px; }
+  .dlg label{ font-size:12px; font-weight:600; color:var(--ink-2); display:block; margin-bottom:6px; }
+  .dlg .btns{ display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
 
-  .section-title{ font-size:13px; font-weight:700; color:var(--ink); margin:18px 0 8px; }
-  .section-title:first-child{ margin-top:0; }
+  .toast{ position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; padding:11px 18px; border-radius:999px; font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:50; max-width:calc(100vw - 32px); }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.err{ background:var(--red); }
 
-  .grid-wrap{ overflow-x:auto; }
-  .grid-table td, .grid-table th{ text-align:center; white-space:nowrap; }
-  .grid-table td:first-child, .grid-table th:first-child{ text-align:left; }
-  .cell-full{ color:#b23b3b; font-weight:700; }
-  .cell-low{ color:#a06600; font-weight:700; }
-  .cell-ok{ color:#4a7c2b; }
+  footer{ text-align:center; color:var(--muted); font-size:11.5px; padding:10px 16px 28px; }
+  footer a{ color:var(--maroon); font-weight:600; text-decoration:none; }
 
-  .guest-cell{ line-height:1.4; }
-  .guest-cell .name{ font-weight:600; }
-  .guest-cell .contact{ color:var(--muted); font-size:11px; }
+  @media (max-width: 860px){
+    .summary{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    .bk{ grid-template-columns:1fr 1fr; }
+    .acts{ grid-column:1 / -1; flex-direction:row; }
+    .acts .btn{ flex:1; }
+  }
+  @media (max-width: 520px){
+    .topbar-in{ padding:10px 16px 0; }
+    main{ padding:18px 16px 32px; }
+    h1{ font-size:22px; }
+    .bk{ grid-template-columns:1fr; gap:12px; padding:14px 16px; }
+    .topright .pill .lbl{ display:none; }
+    .tab{ padding:10px 10px 12px; font-size:13px; }
+  }
 </style>
 </head>
 <body>
 
-<h1>LimeRidge Staff Hub</h1>
-<div class="sub">Front desk view — today's arrivals/departures, all bookings, pending transfers, and room availability.</div>
-
-<div class="key-box" id="keyBox">
-  <div style="font-size:12.5px; font-weight:600; margin-bottom:8px;">Enter admin key</div>
-  <input type="password" id="adminKeyInput" placeholder="Admin key">
-  <button onclick="saveKey()">Open Staff Hub</button>
-</div>
-
-<div id="appArea" style="display:none;">
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="today" onclick="switchTab('today')">Today</button>
-    <button class="tab-btn" data-tab="all" onclick="switchTab('all')">All Bookings</button>
-    <button class="tab-btn" data-tab="pending" onclick="switchTab('pending')">Pending Transfers</button>
-    <button class="tab-btn" data-tab="grid" onclick="switchTab('grid')">Availability Grid</button>
-    <button class="tab-btn" data-tab="" onclick="clearKey()" style="margin-left:auto; color:var(--muted);">Change key</button>
-  </div>
-
-  <!-- TODAY -->
-  <div class="tab-panel active" id="panel-today">
-    <div class="toolbar"><button onclick="loadToday()">Refresh</button></div>
-    <div class="status-msg" id="todayStatus"></div>
-    <div id="todayCards" class="cards-row"></div>
-    <div class="section-title">Arrivals</div>
-    <div id="arrivalsWrap"></div>
-    <div class="section-title">Departures</div>
-    <div id="departuresWrap"></div>
-    <div class="section-title">In-house tonight</div>
-    <div id="inhouseWrap"></div>
-  </div>
-
-  <!-- ALL BOOKINGS -->
-  <div class="tab-panel" id="panel-all">
-    <div class="toolbar">
-      <button onclick="loadAll()">Refresh</button>
-      <select id="allStatusFilter" onchange="renderAll()">
-        <option value="">All statuses</option>
-        <option value="confirmed">Confirmed</option>
-        <option value="pending">Pending</option>
-        <option value="checked-out">Checked out</option>
-        <option value="cancelled">Cancelled</option>
-      </select>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand" aria-label="LimeRidge Signature Hotel"><span class="b1">Lime</span><span class="b2">Ridge</span><div class="b3">Staff Hub</div></div>
+    <div class="topright" id="topright" hidden>
+      <button class="pill" type="button" id="refreshBtn" title="Refresh this tab">&#8635;<span class="lbl"> Refresh</span></button>
+      <button class="pill" type="button" id="signOutBtn" title="Forget the admin key on this device">&#8618;<span class="lbl"> Sign out</span></button>
     </div>
-    <div class="status-msg" id="allStatus"></div>
-    <div id="allWrap"></div>
+    <nav class="tabs" id="tabs" role="tablist" hidden>
+      <button class="tab" role="tab" data-tab="today">Today</button>
+      <button class="tab" role="tab" data-tab="pending">Pending transfers <span class="count" id="pendingCount">&ndash;</span></button>
+      <button class="tab" role="tab" data-tab="all">All bookings</button>
+      <button class="tab" role="tab" data-tab="grid">Availability</button>
+    </nav>
   </div>
+</header>
 
-  <!-- PENDING TRANSFERS -->
-  <div class="tab-panel" id="panel-pending">
-    <div class="sub" style="margin-bottom:12px;">Confirm once you've verified the transfer, or cancel to release the room right away. Unconfirmed holds auto-release after their expiry time regardless.</div>
-    <div class="toolbar"><button onclick="loadPending()">Refresh</button></div>
-    <div class="status-msg" id="pendingStatus"></div>
-    <div id="pendingWrap"></div>
-  </div>
+<main>
+  <!-- Sign in -->
+  <section class="login" id="loginView" hidden>
+    <h2>Staff sign in</h2>
+    <p>Enter the admin key to open the Staff Hub.</p>
+    <form id="loginForm" autocomplete="off">
+      <label for="adminKeyInput">Admin key</label>
+      <input class="field" type="password" id="adminKeyInput" autocomplete="current-password" required>
+      <div class="err" id="loginErr" role="alert"></div>
+      <button class="btn btn-primary btn-block" type="submit" id="loginBtn">Sign in</button>
+    </form>
+  </section>
 
-  <!-- AVAILABILITY GRID -->
-  <div class="tab-panel" id="panel-grid">
-    <div class="toolbar">
-      <button onclick="loadGrid()">Refresh</button>
-      <select id="gridDays" onchange="loadGrid()">
-        <option value="7">Next 7 days</option>
-        <option value="14" selected>Next 14 days</option>
-        <option value="30">Next 30 days</option>
-      </select>
-    </div>
-    <div class="status-msg" id="gridStatus"></div>
-    <div class="grid-wrap" id="gridWrap"></div>
+  <div id="appView" hidden>
+    <div id="notice"></div>
+
+    <!-- TODAY -->
+    <section class="panel" id="panel-today" hidden>
+      <h1>Today</h1>
+      <p class="lede" id="todayLede">Arrivals, departures and who is in the house tonight.</p>
+      <div class="summary" id="todaySummary"></div>
+      <h2 class="section">Arrivals</h2>
+      <div id="arrivalsWrap"></div>
+      <h2 class="section">Departures</h2>
+      <div id="departuresWrap"></div>
+      <h2 class="section">In-house tonight</h2>
+      <div id="inhouseWrap"></div>
+    </section>
+
+    <!-- PENDING TRANSFERS -->
+    <section class="panel" id="panel-pending" hidden>
+      <h1>Pending bank transfers</h1>
+      <p class="lede">Check the hotel account for each transfer below, then confirm it to lock in the room, or cancel to release it. Holds that aren't confirmed release themselves when they expire.</p>
+      <div class="summary" id="pendingSummary"></div>
+      <div class="controls">
+        <label class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="pendingSearch" placeholder="Search guest, phone, reference or room" aria-label="Search pending transfers">
+        </label>
+        <button class="pill" type="button" id="clearExpiredBtn" hidden>Clear expired holds</button>
+        <span class="updated" id="pendingUpdated"></span>
+      </div>
+      <div class="list" id="pendingList"></div>
+    </section>
+
+    <!-- ALL BOOKINGS -->
+    <section class="panel" id="panel-all" hidden>
+      <h1>All bookings</h1>
+      <p class="lede" id="allLede">Every booking, newest first.</p>
+      <div class="controls" style="margin-top:16px;">
+        <label class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="allSearch" placeholder="Search guest, phone, reference or room" aria-label="Search all bookings">
+        </label>
+        <select class="select" id="allStatus" aria-label="Filter by status">
+          <option value="">All statuses</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="pending">Pending</option>
+          <option value="checked-out">Checked out</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div id="allWrap"></div>
+    </section>
+
+    <!-- AVAILABILITY -->
+    <section class="panel" id="panel-grid" hidden>
+      <h1>Availability</h1>
+      <p class="lede">Rooms still free each night, after confirmed bookings and active holds. Red means sold out; amber means 2 or fewer left.</p>
+      <div class="controls" style="margin-top:16px;">
+        <select class="select" id="gridDays" aria-label="Number of days">
+          <option value="7">Next 7 days</option>
+          <option value="14" selected>Next 14 days</option>
+          <option value="30">Next 30 days</option>
+        </select>
+      </div>
+      <div id="gridWrap"></div>
+    </section>
   </div>
-</div>
+</main>
+
+<footer>Designed &amp; built by <a href="https://amanornsolutions.com" target="_blank" rel="noopener">Amanorn Solutions</a></footer>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-  let ADMIN_KEY = localStorage.getItem('limeridge_admin_key') || '';
-  let allBookingsCache = [];
+(function(){
+  'use strict';
 
-  function saveKey(){
-    const val = document.getElementById('adminKeyInput').value.trim();
-    if(!val) return;
-    ADMIN_KEY = val;
-    localStorage.setItem('limeridge_admin_key', val);
-    showApp();
+  // Nightly rates in naira, matching the room cards on the main site.
+  var RATES = {
+    'Classic': 145000, 'Executive': 160000, 'Superior': 180000, 'Executive Superior': 200000,
+    'Signature Suite': 250000, 'Apartment': 450000, 'City View': 550000
+  };
+  var KEY_STORE = 'limeridge_admin_key';
+  var TABS = ['today', 'pending', 'all', 'grid'];
+  var REFRESH_MS = 60000;
+  var SOON_MS = 60 * 60 * 1000;
+  var TZ = 'Africa/Lagos';
+
+  var adminKey = '';
+  var currentTab = 'today';
+  var pending = [];
+  var allBookings = [];
+  var todayList = [];
+  var pendingLoadedAt = null;
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  // ---------- helpers ----------
+  function readKey(){ try { return localStorage.getItem(KEY_STORE) || ''; } catch(e){ return ''; } }
+  function storeKey(k){ try { localStorage.setItem(KEY_STORE, k); } catch(e){} }
+  function forgetKey(){ try { localStorage.removeItem(KEY_STORE); } catch(e){} }
+  function esc(str){
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function naira(n){ return '₦' + Math.round(n).toLocaleString('en-NG'); }
+  function lagosToday(){ return new Date(Date.now() + 3600000).toISOString().slice(0, 10); }
+  function nightsOf(b){
+    var a = Date.parse(b.checkin + 'T00:00:00Z'), z = Date.parse(b.checkout + 'T00:00:00Z');
+    return (isFinite(a) && isFinite(z) && z > a) ? Math.round((z - a) / 86400000) : 0;
+  }
+  function expectedAmount(b){
+    if(b.expectedAmount) return b.expectedAmount;
+    var r = RATES[b.roomType], n = nightsOf(b); return (r && n) ? r * n : null;
+  }
+  function day(iso){
+    var d = new Date(iso + 'T00:00:00Z');
+    return isNaN(d) ? esc(iso) : d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', timeZone:'UTC' });
+  }
+  function when(ms){
+    if(!ms || !isFinite(ms)) return '';
+    return new Date(ms).toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit', timeZone:TZ });
+  }
+  function duration(ms){
+    var m = Math.max(0, Math.round(ms / 60000));
+    if(m < 60) return m + 'm';
+    var h = Math.floor(m / 60), r = m % 60;
+    if(h < 48) return h + 'h' + (r ? ' ' + r + 'm' : '');
+    return Math.floor(h / 24) + 'd';
+  }
+  function holdState(b, now){
+    if(!b.expiresAt) return { cls:'pending', label:'Pending', expired:false, soon:false };
+    var left = b.expiresAt * 1000 - now;
+    if(left <= 0) return { cls:'expired', label:'Expired ' + duration(-left) + ' ago', expired:true, soon:false };
+    if(left <= SOON_MS) return { cls:'soon', label:'Expires in ' + duration(left), expired:false, soon:true };
+    return { cls:'pending', label:'Expires in ' + duration(left), expired:false, soon:false };
+  }
+  // Nigerian numbers: 0803... -> 234803... ; others kept as typed.
+  function waNumber(phone){
+    var d = String(phone || '').replace(/\D/g, '');
+    if(!d) return '';
+    if(d.indexOf('0') === 0 && d.length === 11) d = '234' + d.slice(1);
+    return d.length >= 10 ? d : '';
+  }
+  function matches(b, q){
+    return !q || [b.guestName, b.guestPhone, b.guestEmail, b.reference, b.roomType].join(' ').toLowerCase().indexOf(q) !== -1;
+  }
+  function toast(msg, isErr){
+    var t = $('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isErr ? ' err' : '');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ t.className = 'toast' + (isErr ? ' err' : ''); }, 3200);
+  }
+  function showError(msg){ $('notice').innerHTML = msg ? '<div class="notice">' + esc(msg) + '</div>' : ''; }
+
+  // The admin key always travels in a header, never in the URL.
+  function api(action, body, query){
+    var opts = { headers: { 'x-admin-key': adminKey } };
+    if(body){ opts.method = 'POST'; opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    return fetch('/api/admin?action=' + encodeURIComponent(action) + (query || ''), opts).then(function(res){
+      return res.json().catch(function(){ return {}; }).then(function(data){
+        data = data || {}; data._status = res.status;
+        if(res.status === 401){ signedOut('Your admin key was not accepted. Please sign in again.'); throw new Error('401'); }
+        return data;
+      });
+    });
   }
 
-  function clearKey(){
-    localStorage.removeItem('limeridge_admin_key');
-    ADMIN_KEY = '';
-    document.getElementById('keyBox').style.display = 'block';
-    document.getElementById('appArea').style.display = 'none';
+  function stat(n, label, cls, goTab){
+    var tag = goTab ? 'button' : 'div';
+    return '<' + tag + ' class="stat ' + (cls || '') + '"' + (goTab ? ' type="button" data-go="' + goTab + '"' : '') + '><div class="n">' + esc(n) + '</div><div class="l">' + esc(label) + '</div></' + tag + '>';
   }
-
-  function showApp(){
-    document.getElementById('keyBox').style.display = 'none';
-    document.getElementById('appArea').style.display = 'block';
-    loadToday();
-  }
-
-  function switchTab(tab){
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + tab).classList.add('active');
-    if(tab === 'today') loadToday();
-    if(tab === 'all') loadAll();
-    if(tab === 'pending') loadPending();
-    if(tab === 'grid') loadGrid();
-  }
-
-  function escapeHtml(str){
-    return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
-  function fmtDate(iso){
-    if(!iso) return '';
-    const d = new Date(iso);
-    return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
-  }
-
+  function statusBadge(s){ return '<span class="badge ' + esc(s) + '">' + esc(String(s || '').replace('-', ' ')) + '</span>'; }
   function guestCell(b){
-    const contacts = [b.guestEmail, b.guestPhone].filter(Boolean).map(escapeHtml).join(' &middot; ');
-    return '<div class="guest-cell"><div class="name">' + (b.guestName ? escapeHtml(b.guestName) : '<span style="color:var(--muted)">&mdash;</span>') + '</div>' +
-      (contacts ? '<div class="contact">' + contacts + '</div>' : '') + '</div>';
+    var c = [b.guestPhone, b.guestEmail].filter(Boolean).map(esc).join(' &middot; ');
+    return (b.guestName ? '<div style="font-weight:600">' + esc(b.guestName) + '</div>' : '<div class="none">No name</div>') +
+      (c ? '<div class="sub">' + c + '</div>' : '');
   }
 
-  async function apiGet(action, extra){
-    const res = await fetch('/api/admin?action=' + action + (extra || ''), { headers: { 'x-admin-key': ADMIN_KEY } });
-    if(res.status === 401){
-      throw new Error('Admin key rejected. Click "Change key" and try again.');
-    }
-    return res.json();
+  // ---------- views & tabs ----------
+  function signedOut(msg){
+    forgetKey(); adminKey = '';
+    $('appView').hidden = true; $('tabs').hidden = true; $('topright').hidden = true; $('loginView').hidden = false;
+    $('loginErr').textContent = msg || '';
+    setTimeout(function(){ $('adminKeyInput').focus(); }, 0);
+  }
+  function openApp(){
+    $('loginView').hidden = true; $('appView').hidden = false; $('tabs').hidden = false; $('topright').hidden = false;
+    var fromHash = (location.hash || '').replace('#', '');
+    switchTab(TABS.indexOf(fromHash) !== -1 ? fromHash : 'today');
+    if(currentTab !== 'pending') loadPending(true);
+  }
+  function switchTab(tab){
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(function(b){
+      var on = b.getAttribute('data-tab') === tab;
+      b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    TABS.forEach(function(t){ $('panel-' + t).hidden = (t !== tab); });
+    if(location.hash !== '#' + tab) history.replaceState(null, '', '#' + tab);
+    showError('');
+    loadTab(tab);
+  }
+  function loadTab(tab){
+    if(tab === 'today') return loadToday();
+    if(tab === 'pending') return loadPending();
+    if(tab === 'all') return loadAll();
+    if(tab === 'grid') return loadGrid();
   }
 
   // ---------- TODAY ----------
-  async function loadToday(){
-    const statusEl = document.getElementById('todayStatus');
-    statusEl.textContent = 'Loading…';
-    try{
-      const data = await apiGet('today');
-      statusEl.textContent = 'As of ' + data.date;
-      document.getElementById('todayCards').innerHTML =
-        statCard(data.arrivals.length, 'Arrivals') +
-        statCard(data.departures.length, 'Departures') +
-        statCard(data.inHouse.length, 'In-house');
-      document.getElementById('arrivalsWrap').innerHTML = bookingsTable(data.arrivals, 'No arrivals today.');
-      document.getElementById('departuresWrap').innerHTML = bookingsTable(data.departures, 'No departures today.', {showCheckout:true});
-      document.getElementById('inhouseWrap').innerHTML = bookingsTable(data.inHouse, 'No guests in-house tonight.', {showCheckout:true});
-    } catch(e){
-      statusEl.textContent = e.message || "Could not load today's bookings.";
-    }
+  function loadToday(){
+    return api('today').then(function(data){
+      if(!data.success){ showError(data.message || "Could not load today's bookings."); return; }
+      todayList = [].concat(data.arrivals || [], data.departures || [], data.inHouse || []);
+      var d = new Date(data.date + 'T00:00:00Z');
+      $('todayLede').textContent = d.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:'UTC' }) + ' · arrivals, departures and who is in the house tonight.';
+      var activePending = pending.filter(function(b){ return !holdState(b, Date.now()).expired; }).length;
+      $('todaySummary').innerHTML =
+        stat(data.arrivals.length, 'Arrivals', '') +
+        stat(data.departures.length, 'Departures', '') +
+        stat(data.inHouse.length, 'In-house tonight', 'good') +
+        stat(pendingLoadedAt ? activePending : '–', 'Transfers to check', activePending ? 'warn' : '', 'pending');
+      $('arrivalsWrap').innerHTML = bookingsTable(data.arrivals, 'No arrivals today.', {});
+      $('departuresWrap').innerHTML = bookingsTable(data.departures, 'No departures today.', { checkout:true });
+      $('inhouseWrap').innerHTML = bookingsTable(data.inHouse, 'No guests in-house tonight.', { checkout:true });
+    }).catch(function(e){ if(e.message !== '401') showError("Could not load today's bookings. Check the connection and press Refresh."); });
   }
 
-  function statCard(num, label){
-    return '<div class="stat-card"><div class="num">' + num + '</div><div class="label">' + label + '</div></div>';
-  }
-
-  function bookingsTable(bookings, emptyMsg, opts){
-    opts = opts || {};
-    const showCheckout = !!opts.showCheckout;
-    const showDelete = !!opts.showDelete;
-    if(!bookings || bookings.length === 0) return '<div class="empty-note">' + emptyMsg + '</div>';
-    const rows = bookings.map(b => {
-      const canCheckout = showCheckout && b.status === 'confirmed';
-      const actionButtons = [];
-      if(canCheckout) actionButtons.push('<button class="btn-checkout" data-act="checkout" data-ref="' + escapeHtml(b.reference) + '">Check out</button>');
-      if(showDelete) actionButtons.push('<button class="btn-delete" data-act="delete" data-ref="' + escapeHtml(b.reference) + '">Delete</button>');
+  function bookingsTable(list, emptyMsg, opts){
+    if(!list || list.length === 0) return '<div class="empty">' + esc(emptyMsg) + '</div>';
+    var withActs = opts.checkout || opts.del;
+    var rows = list.map(function(b){
+      var acts = [];
+      if(opts.checkout && b.status === 'confirmed') acts.push('<button class="btn btn-gold btn-sm" type="button" data-act="checkout" data-ref="' + esc(b.reference) + '">Check out</button>');
+      if(opts.del) acts.push('<button class="btn btn-plain btn-sm" type="button" data-act="delete" data-ref="' + esc(b.reference) + '">Delete</button>');
+      var amt = expectedAmount(b);
       return '<tr>' +
-        '<td>' + escapeHtml(b.roomType) + '</td>' +
+        '<td><div style="font-weight:600">' + esc(b.roomType) + '</div><div class="sub">' + nightsOf(b) + ' night' + (nightsOf(b) === 1 ? '' : 's') + (amt ? ' &middot; ' + naira(amt) : '') + '</div></td>' +
         '<td>' + guestCell(b) + '</td>' +
-        '<td>' + escapeHtml(b.checkin) + ' &rarr; ' + escapeHtml(b.checkout) + '</td>' +
-        '<td>' + escapeHtml(b.reference) + '</td>' +
-        '<td><span class="badge ' + escapeHtml(b.status) + '">' + escapeHtml(b.status.replace('-', ' ')) + '</span></td>' +
-        ((showCheckout || showDelete) ? '<td><div class="row-actions">' + actionButtons.join('') + '</div></td>' : '') +
+        '<td style="white-space:nowrap">' + day(b.checkin) + ' &rarr; ' + day(b.checkout) + '</td>' +
+        '<td><span class="ref">' + esc(b.reference) + '</span>' + (b.source ? '<div class="sub">' + esc(String(b.source).replace('_', ' ')) + '</div>' : '') + '</td>' +
+        '<td>' + statusBadge(b.status) + '</td>' +
+        (withActs ? '<td><div class="row-acts">' + acts.join('') + '</div></td>' : '') +
       '</tr>';
     }).join('');
-    const headerExtra = (showCheckout || showDelete) ? '<th>Action</th>' : '';
-    return '<table><thead><tr><th>Room</th><th>Guest</th><th>Dates</th><th>Reference</th><th>Status</th>' + headerExtra + '</tr></thead><tbody>' + rows + '</tbody></table>';
-  }
-
-  async function promptCheckout(reference){
-    const today = new Date().toISOString().slice(0, 10);
-    const input = prompt('Check-out date (YYYY-MM-DD). Leave as today for a normal checkout, or enter an earlier date if the guest is leaving early and the remaining nights should be released back into inventory:', today);
-    if(input === null) return;
-    const checkoutDate = (input.trim() || today);
-    try{
-      const res = await fetch('/api/admin?action=checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
-        body: JSON.stringify({ reference: reference, checkoutDate: checkoutDate })
-      });
-      const data = await res.json();
-      if(!data.success){
-        alert('Failed: ' + (data.message || 'Unknown error'));
-        return;
-      }
-      if(data.releasedNights > 0){
-        alert('Checked out. ' + data.releasedNights + ' night(s) released back into inventory.');
-      }
-      loadToday();
-      if(document.getElementById('panel-all').classList.contains('active')) loadAll();
-    } catch(e){
-      alert('Request failed.');
-    }
-  }
-
-  async function promptDelete(reference){
-    if(!confirm('Permanently delete booking ' + reference + '? This releases any inventory it still holds and cannot be undone.')) return;
-    try{
-      const res = await fetch('/api/admin?action=delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
-        body: JSON.stringify({ reference: reference })
-      });
-      const data = await res.json();
-      if(!data.success){
-        alert('Failed: ' + (data.message || 'Unknown error'));
-        return;
-      }
-      if(data.releasedNights > 0){
-        alert('Deleted. ' + data.releasedNights + ' night(s) released back into inventory.');
-      }
-      loadAll();
-      loadToday();
-    } catch(e){
-      alert('Request failed.');
-    }
-  }
-
-  // ---------- ALL BOOKINGS ----------
-  async function loadAll(){
-    const statusEl = document.getElementById('allStatus');
-    statusEl.textContent = 'Loading…';
-    try{
-      const data = await apiGet('list-all');
-      allBookingsCache = data.bookings || [];
-      statusEl.textContent = allBookingsCache.length + ' total bookings';
-      renderAll();
-    } catch(e){
-      statusEl.textContent = e.message || 'Could not load bookings.';
-    }
-  }
-
-  function renderAll(){
-    const filter = document.getElementById('allStatusFilter').value;
-    const list = filter ? allBookingsCache.filter(b => b.status === filter) : allBookingsCache;
-    document.getElementById('allWrap').innerHTML = bookingsTable(list, 'No bookings found.', {showCheckout:true, showDelete:true});
+    return '<div class="table-wrap"><table><thead><tr><th>Room</th><th>Guest</th><th>Dates</th><th>Reference</th><th>Status</th>' + (withActs ? '<th></th>' : '') + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
 
   // ---------- PENDING TRANSFERS ----------
-  async function loadPending(){
-    const statusEl = document.getElementById('pendingStatus');
-    const wrap = document.getElementById('pendingWrap');
-    statusEl.textContent = 'Loading…';
-    try{
-      const data = await apiGet('list');
-      statusEl.textContent = '';
-      const bookings = (data.bookings || []).filter(b => b.status === 'pending');
-      if(bookings.length === 0){
-        wrap.innerHTML = '<div class="empty-note">No pending bank transfer bookings right now.</div>';
-        return;
+  function loadPending(quiet){
+    return api('list').then(function(data){
+      if(!data.success){ if(!quiet) showError(data.message || 'Could not load pending transfers.'); return; }
+      pending = (data.bookings || []).filter(function(b){ return b && b.status === 'pending'; });
+      pendingLoadedAt = Date.now();
+      renderPending();
+    }).catch(function(e){ if(e.message !== '401' && !quiet) showError('Could not load pending transfers. Check the connection and press Refresh.'); });
+  }
+
+  function renderPending(){
+    var now = Date.now();
+    var q = $('pendingSearch').value.trim().toLowerCase();
+    var sorted = pending.slice().sort(function(a, b){
+      var ea = a.expiresAt && a.expiresAt * 1000 <= now, eb = b.expiresAt && b.expiresAt * 1000 <= now;
+      if(ea !== eb) return ea ? 1 : -1;
+      return ea ? (b.expiresAt || 0) - (a.expiresAt || 0) : (a.expiresAt || 0) - (b.expiresAt || 0);
+    });
+    var active = 0, soon = 0, expired = 0, total = 0;
+    sorted.forEach(function(b){
+      var s = holdState(b, now);
+      if(s.expired) expired++; else { active++; if(s.soon) soon++; var amt = expectedAmount(b); if(amt) total += amt; }
+    });
+
+    var badge = $('pendingCount');
+    badge.textContent = active;
+    badge.classList.toggle('hot', active > 0);
+
+    $('pendingSummary').innerHTML =
+      stat(active, 'Awaiting check', '') +
+      stat(soon, 'Expiring within 1h', soon ? 'bad' : '') +
+      stat(expired, 'Expired holds', expired ? 'warn' : '') +
+      stat(naira(total), 'Expected (active)', 'money');
+    $('clearExpiredBtn').hidden = expired === 0;
+    $('clearExpiredBtn').textContent = 'Clear ' + expired + ' expired hold' + (expired === 1 ? '' : 's');
+
+    var shown = sorted.filter(function(b){ return matches(b, q); });
+    if(pending.length === 0){
+      $('pendingList').innerHTML = '<div class="empty"><div class="big" aria-hidden="true">&#10003;</div><strong>All clear</strong>No bank transfers are waiting to be checked.</div>';
+    } else if(shown.length === 0){
+      $('pendingList').innerHTML = '<div class="empty"><strong>No matches</strong>Nothing matches “' + esc(q) + '”.</div>';
+    } else {
+      $('pendingList').innerHTML = shown.map(function(b){ return pendingCard(b, now); }).join('');
+    }
+    var age = now - pendingLoadedAt;
+    $('pendingUpdated').textContent = pendingLoadedAt ? (age < 60000 ? 'Updated just now' : 'Updated ' + duration(age) + ' ago') : '';
+    var todayTile = document.querySelector('#todaySummary [data-go="pending"]');
+    if(todayTile){
+      todayTile.querySelector('.n').textContent = active;
+      todayTile.classList.toggle('warn', active > 0);
+    }
+  }
+
+  function pendingCard(b, now){
+    var s = holdState(b, now), n = nightsOf(b), amt = expectedAmount(b), ref = esc(b.reference), links = [];
+    if(b.guestPhone){
+      links.push('<a class="chip" href="tel:' + esc(String(b.guestPhone).replace(/[^\d+]/g, '')) + '">&#9742; ' + esc(b.guestPhone) + '</a>');
+      var wa = waNumber(b.guestPhone);
+      if(wa){
+        var msg = 'Hello' + (b.guestName ? ' ' + b.guestName : '') + ', this is LimeRidge Signature Hotel about your ' + (b.roomType || '') + ' booking (ref ' + (b.reference || '') + ').';
+        links.push('<a class="chip wa" target="_blank" rel="noopener" href="https://wa.me/' + wa + '?text=' + esc(encodeURIComponent(msg)) + '">WhatsApp</a>');
       }
-      const now = Date.now();
-      const rows = bookings.map(b => {
-        const expired = b.expiresAt && (b.expiresAt * 1000) < now;
-        return '<tr>' +
-          '<td>' + escapeHtml(b.roomType) + '</td>' +
-          '<td>' + guestCell(b) + '</td>' +
-          '<td>' + escapeHtml(b.checkin) + ' &rarr; ' + escapeHtml(b.checkout) + '</td>' +
-          '<td>' + escapeHtml(b.reference) + '</td>' +
-          '<td>' + fmtDate(b.recordedAt) + '</td>' +
-          '<td>' + fmtDate(b.expiresAt ? new Date(b.expiresAt * 1000).toISOString() : '') + '</td>' +
-          '<td><span class="badge ' + (expired ? 'expired' : 'pending') + '">' + (expired ? 'Expired' : 'Pending') + '</span></td>' +
-          '<td><div class="row-actions">' +
-            '<button class="btn-confirm" data-act="confirm" data-ref="' + escapeHtml(b.reference) + '">Confirm</button>' +
-            '<button class="btn-cancel" data-act="cancel" data-ref="' + escapeHtml(b.reference) + '">Cancel</button>' +
-          '</div></td>' +
-        '</tr>';
-      }).join('');
-      wrap.innerHTML = '<table><thead><tr><th>Room</th><th>Guest</th><th>Dates</th><th>Reference</th><th>Requested</th><th>Hold Expires</th><th>Status</th><th>Action</th></tr></thead><tbody>' + rows + '</tbody></table>';
-    } catch(e){
-      statusEl.textContent = e.message || 'Could not load bookings.';
     }
+    if(b.guestEmail) links.push('<a class="chip" href="mailto:' + esc(b.guestEmail) + '">&#9993; Email</a>');
+    var rate = RATES[b.roomType];
+    return '<article class="bk ' + (s.expired ? 'expired' : (s.soon ? 'soon' : '')) + '">' +
+      '<div><div class="room">' + esc(b.roomType) + '</div>' +
+        '<div class="dates">' + day(b.checkin) + ' &rarr; ' + day(b.checkout) + '</div>' +
+        '<div class="nights">' + n + ' night' + (n === 1 ? '' : 's') + ' &middot; 1 room</div></div>' +
+      '<div class="guest"><div class="k">Guest</div>' +
+        (b.guestName ? '<div class="name">' + esc(b.guestName) + '</div>' : '<div class="none">No name given</div>') +
+        (links.length ? '<div class="links">' + links.join('') + '</div>' : '') + '</div>' +
+      '<div><div class="k">Expected transfer</div>' +
+        '<div class="amt">' + (amt ? naira(amt) : '&mdash;') + (amt && rate ? '<small>' + naira(rate) + ' &times; ' + n + '</small>' : '') + '</div>' +
+        '<div class="meta">Ref <span class="ref">' + ref + '</span> <button class="chip" type="button" data-act="copy" data-ref="' + ref + '" title="Copy reference">Copy</button></div>' +
+        '<div class="meta">Requested ' + esc(when(Date.parse(b.recordedAt))) + (b.source && b.source !== 'bank_transfer' ? ' &middot; via ' + esc(b.source) : '') + '</div>' +
+        (b.note ? '<div class="meta note">&#9888; ' + esc(b.note) + '</div>' : '') +
+        '<div class="meta"><span class="badge hold ' + s.cls + '">' + esc(s.label) + '</span></div></div>' +
+      '<div class="acts">' +
+        '<button class="btn btn-confirm" type="button" data-act="confirm" data-ref="' + ref + '">Confirm</button>' +
+        '<button class="btn btn-ghost" type="button" data-act="cancel" data-ref="' + ref + '">Cancel</button>' +
+      '</div>' +
+    '</article>';
   }
 
-  async function act(action, reference){
-    if(action === 'cancel' && !confirm('Release this room immediately?')) return;
-    try{
-      const res = await fetch('/api/admin?action=' + action, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
-        body: JSON.stringify({ reference: reference })
-      });
-      const data = await res.json();
-      if(!data.success){
-        alert('Failed: ' + (data.message || 'Unknown error'));
-        return;
+  // ---------- ALL BOOKINGS ----------
+  function loadAll(){
+    return api('list-all').then(function(data){
+      if(!data.success){ showError(data.message || 'Could not load bookings.'); return; }
+      allBookings = data.bookings || [];
+      renderAll();
+    }).catch(function(e){ if(e.message !== '401') showError('Could not load bookings. Check the connection and press Refresh.'); });
+  }
+  function renderAll(){
+    var f = $('allStatus').value, q = $('allSearch').value.trim().toLowerCase();
+    var list = allBookings.filter(function(b){ return (!f || b.status === f) && matches(b, q); });
+    $('allLede').textContent = allBookings.length + ' booking' + (allBookings.length === 1 ? '' : 's') + ' in total' + (list.length !== allBookings.length ? ' · showing ' + list.length : '') + ', newest first.';
+    $('allWrap').innerHTML = bookingsTable(list, 'No bookings found.', { checkout:true, del:true });
+  }
+
+  // ---------- AVAILABILITY ----------
+  function loadGrid(){
+    return api('grid', null, '&days=' + encodeURIComponent($('gridDays').value)).then(function(data){
+      if(!data.success){ showError(data.message || 'Could not load availability.'); return; }
+      var dates = data.days || [], grid = data.grid || {};
+      var head = dates.map(function(d){
+        var x = new Date(d + 'T00:00:00Z');
+        return '<th>' + x.toLocaleDateString('en-GB', { weekday:'short', timeZone:'UTC' }) + '<br>' + x.toLocaleDateString('en-GB', { day:'numeric', month:'short', timeZone:'UTC' }) + '</th>';
+      }).join('');
+      var rows = Object.keys(grid).map(function(slug){
+        var room = grid[slug];
+        return '<tr><td><strong>' + esc(room.roomType) + '</strong> <span class="sub">of ' + esc(room.total) + '</span></td>' + dates.map(function(d){
+          var c = room.days[d] || { remaining:0, booked:0, held:0 };
+          var cls = c.remaining === 0 ? 'cell-full' : (c.remaining <= 2 ? 'cell-low' : 'cell-ok');
+          return '<td class="' + cls + '" title="' + c.booked + ' booked, ' + c.held + ' on hold">' + c.remaining + '</td>';
+        }).join('') + '</tr>';
+      }).join('');
+      $('gridWrap').innerHTML = '<div class="table-wrap"><table class="grid-table"><thead><tr><th>Room</th>' + head + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+    }).catch(function(e){ if(e.message !== '401') showError('Could not load availability. Check the connection and press Refresh.'); });
+  }
+
+  // ---------- dialogs & actions ----------
+  function ask(html, okLabel, okClass){
+    return new Promise(function(resolve){
+      var dlg = $('dlg'), settled = false;
+      $('dlgBody').innerHTML = html +
+        '<div class="btns"><button class="btn btn-plain" type="button" data-dlg="no">Go back</button>' +
+        '<button class="btn ' + okClass + '" type="button" data-dlg="yes">' + esc(okLabel) + '</button></div>';
+      function finish(val){ if(settled) return; settled = true; if(dlg.open) dlg.close(); resolve(val); }
+      dlg.addEventListener('close', function(){ finish(false); }, { once:true });
+      $('dlgBody').querySelector('[data-dlg="no"]').onclick = function(){ finish(false); };
+      $('dlgBody').querySelector('[data-dlg="yes"]').onclick = function(){ finish(true); };
+      dlg.showModal();
+      var first = $('dlgBody').querySelector('input') || $('dlgBody').querySelector('[data-dlg="no"]');
+      first.focus();
+    });
+  }
+  function summaryRows(b){
+    var amt = expectedAmount(b);
+    return '<div class="rows">' + row('Guest', b.guestName || '—') + row('Room', b.roomType) +
+      row('Dates', day(b.checkin) + ' → ' + day(b.checkout), true) + row('Amount', amt ? naira(amt) : '—') + row('Reference', b.reference) + '</div>';
+  }
+  function row(k, v, raw){ return '<div class="row"><span>' + esc(k) + '</span><span>' + (raw ? v : esc(v)) + '</span></div>'; }
+  function findIn(list, ref){ for(var i = 0; i < list.length; i++){ if(list[i].reference === ref) return list[i]; } return null; }
+  function setBusy(ref, busy){
+    var sel = '[data-ref="' + (window.CSS && CSS.escape ? CSS.escape(ref) : ref) + '"]';
+    document.querySelectorAll('button' + sel).forEach(function(b){ b.disabled = busy; });
+  }
+  function afterChange(){ loadPending(currentTab !== 'pending'); if(currentTab !== 'pending') loadTab(currentTab); }
+
+  function confirmTransfer(b){
+    var s = holdState(b, Date.now());
+    var warn = s.expired ? '<div class="warn">This hold expired ' + esc(s.label.replace('Expired ', '')) + '. The room may have been booked by someone else since. The system will check before confirming.</div>' : '';
+    ask('<h3>Confirm this transfer?</h3>' + summaryRows(b) + warn +
+        '<p class="q">Only confirm once you can see this payment in the hotel account. Confirming books the room for these dates.</p>',
+        'Yes, payment received', 'btn-confirm')
+      .then(function(ok){ if(ok) return send('confirm', b, {}); });
+  }
+  function cancelTransfer(b){
+    ask('<h3>Cancel this hold?</h3>' + summaryRows(b) + '<p class="q">The room is released straight away and can be booked by other guests. Use this if the transfer did not arrive.</p>',
+        'Cancel hold', 'btn-ghost')
+      .then(function(ok){ if(ok) return send('cancel', b, {}); });
+  }
+  function send(action, b, extra){
+    setBusy(b.reference, true);
+    return api(action, Object.assign({ reference: b.reference }, extra)).then(function(data){
+      if(data._status === 409 && data.code === 'no-availability'){
+        setBusy(b.reference, false);
+        return ask('<h3>Room is full</h3><div class="warn red">' + esc(data.message || 'This room type is fully booked on some of these nights.') + '</div>' + summaryRows(b) +
+            '<p class="q">Only confirm anyway if you have checked that a room is really free. Otherwise cancel this hold and contact the guest.</p>',
+            'Confirm anyway', 'btn-primary')
+          .then(function(ok){ if(ok) return send('confirm', b, { force:true }); });
       }
-      loadPending();
-    } catch(e){
-      alert('Request failed.');
-    }
+      if(!data.success){ setBusy(b.reference, false); toast(data.message || 'That did not work. Please try again.', true); return; }
+      toast(action === 'confirm' ? 'Confirmed: ' + (b.guestName || b.reference) : 'Cancelled and room released');
+      afterChange();
+    }).catch(function(e){ setBusy(b.reference, false); if(e.message !== '401') toast('Could not reach the server. Please try again.', true); });
   }
 
-  // ---------- AVAILABILITY GRID ----------
-  async function loadGrid(){
-    const statusEl = document.getElementById('gridStatus');
-    const wrap = document.getElementById('gridWrap');
-    const days = document.getElementById('gridDays').value;
-    statusEl.textContent = 'Loading…';
-    try{
-      const data = await apiGet('grid', '&days=' + encodeURIComponent(days));
-      statusEl.textContent = '';
-      const dateList = data.days || [];
-      const grid = data.grid || {};
-      const headerCells = dateList.map(d => {
-        const short = new Date(d + 'T00:00:00Z').toLocaleDateString('en-US', { month:'short', day:'numeric', timeZone:'UTC' });
-        return '<th>' + short + '</th>';
-      }).join('');
-      const rows = Object.keys(grid).map(slug => {
-        const room = grid[slug];
-        const cells = dateList.map(d => {
-          const c = room.days[d];
-          const cls = c.remaining === 0 ? 'cell-full' : (c.remaining <= 2 ? 'cell-low' : 'cell-ok');
-          return '<td class="' + cls + '">' + c.remaining + '</td>';
-        }).join('');
-        return '<tr><td>' + escapeHtml(room.roomType) + ' <span style="color:var(--muted); font-weight:400;">(' + room.total + ')</span></td>' + cells + '</tr>';
-      }).join('');
-      wrap.innerHTML = '<table class="grid-table"><thead><tr><th>Room type (total)</th>' + headerCells + '</tr></thead><tbody>' + rows + '</tbody></table>';
-    } catch(e){
-      statusEl.textContent = e.message || 'Could not load availability grid.';
-    }
+  function checkoutBooking(b){
+    var today = lagosToday();
+    ask('<h3>Check out guest</h3>' + summaryRows(b) +
+        '<label for="coDate">Check-out date</label>' +
+        '<input class="field" type="date" id="coDate" value="' + esc(today) + '" min="' + esc(b.checkin) + '" max="' + esc(b.checkout) + '" style="margin-bottom:8px;">' +
+        '<p class="q" style="font-size:12.5px;color:var(--muted);">Leave as today for a normal check-out. If the guest is leaving early, any unused nights are released for other guests.</p>',
+        'Check out', 'btn-gold')
+      .then(function(ok){
+        if(!ok) return;
+        var date = ($('coDate') && $('coDate').value) || today;
+        setBusy(b.reference, true);
+        return api('checkout', { reference: b.reference, checkoutDate: date }).then(function(data){
+          if(!data.success){ setBusy(b.reference, false); toast(data.message || 'Check-out failed.', true); return; }
+          toast('Checked out' + (data.releasedNights ? ' · ' + data.releasedNights + ' night(s) released' : ''));
+          loadTab(currentTab);
+        });
+      }).catch(function(e){ setBusy(b.reference, false); if(e && e.message !== '401') toast('Could not reach the server. Please try again.', true); });
   }
 
-  // Row buttons carry the reference in a data attribute (never inside inline
-  // JavaScript), so a booking reference can't inject code into this page.
-  document.getElementById('appArea').addEventListener('click', function(e){
-    const btn = e.target.closest('button[data-act]');
-    if(!btn) return;
-    const ref = btn.getAttribute('data-ref');
-    const a = btn.getAttribute('data-act');
-    if(a === 'checkout') promptCheckout(ref);
-    else if(a === 'delete') promptDelete(ref);
-    else if(a === 'confirm' || a === 'cancel') act(a, ref);
+  function deleteBooking(b){
+    ask('<h3>Delete this booking?</h3>' + summaryRows(b) +
+        '<div class="warn red">This permanently removes the booking and releases any nights it still holds. It cannot be undone. To keep a record, cancel or check out instead.</div>',
+        'Delete permanently', 'btn-ghost')
+      .then(function(ok){
+        if(!ok) return;
+        setBusy(b.reference, true);
+        return api('delete', { reference: b.reference }).then(function(data){
+          if(!data.success){ setBusy(b.reference, false); toast(data.message || 'Delete failed.', true); return; }
+          toast('Booking deleted');
+          afterChange();
+        });
+      }).catch(function(e){ setBusy(b.reference, false); if(e && e.message !== '401') toast('Could not reach the server. Please try again.', true); });
+  }
+
+  function clearExpired(){
+    var now = Date.now();
+    var expired = pending.filter(function(b){ return holdState(b, now).expired; });
+    if(!expired.length) return;
+    ask('<h3>Clear ' + expired.length + ' expired hold' + (expired.length === 1 ? '' : 's') + '?</h3>' +
+        '<p class="q">These holds have already run out, so their rooms are no longer reserved. Clearing marks them as cancelled and removes them from this list. Anything still within its hold time is not touched.</p>',
+        'Clear expired', 'btn-ghost')
+      .then(function(ok){
+        if(!ok) return;
+        var btn = $('clearExpiredBtn'); btn.disabled = true;
+        var done = 0, failed = 0;
+        return expired.reduce(function(p, b){
+          return p.then(function(){
+            return api('cancel', { reference: b.reference }).then(function(d){ if(d.success) done++; else failed++; }, function(e){ if(e.message === '401') throw e; failed++; });
+          });
+        }, Promise.resolve()).then(function(){
+          btn.disabled = false;
+          toast(failed ? 'Cleared ' + done + ', ' + failed + ' failed' : 'Cleared ' + done + ' expired hold' + (done === 1 ? '' : 's'), failed > 0);
+          loadPending();
+        });
+      }).catch(function(){ $('clearExpiredBtn').disabled = false; });
+  }
+
+  function copyRef(ref){
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ref).then(function(){ toast('Reference copied'); }, function(){ toast(ref); });
+    else toast(ref);
+  }
+
+  // ---------- wiring ----------
+  $('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var val = $('adminKeyInput').value.trim();
+    if(!val) return;
+    $('loginBtn').disabled = true; $('loginErr').textContent = '';
+    fetch('/api/admin?action=list', { headers: { 'x-admin-key': val } }).then(function(res){
+      $('loginBtn').disabled = false;
+      if(res.status === 401){ $('loginErr').textContent = 'That admin key was not accepted.'; return; }
+      adminKey = val; storeKey(val); $('adminKeyInput').value = '';
+      openApp();
+    }).catch(function(){ $('loginBtn').disabled = false; $('loginErr').textContent = 'Could not reach the server. Check the connection.'; });
   });
 
-  if(ADMIN_KEY){ showApp(); }
-</script>
+  $('tabs').addEventListener('click', function(e){ var t = e.target.closest('[data-tab]'); if(t) switchTab(t.getAttribute('data-tab')); });
+  $('signOutBtn').addEventListener('click', function(){ signedOut('Signed out.'); });
+  $('refreshBtn').addEventListener('click', function(){
+    var btn = $('refreshBtn'); btn.disabled = true;
+    Promise.resolve(loadTab(currentTab)).then(function(){ if(currentTab !== 'pending') return loadPending(true); })
+      .then(function(){ btn.disabled = false; toast('Updated'); }, function(){ btn.disabled = false; });
+  });
+  $('pendingSearch').addEventListener('input', renderPending);
+  $('allSearch').addEventListener('input', renderAll);
+  $('allStatus').addEventListener('change', renderAll);
+  $('gridDays').addEventListener('change', loadGrid);
+  $('clearExpiredBtn').addEventListener('click', clearExpired);
+  window.addEventListener('hashchange', function(){
+    var t = location.hash.replace('#', '');
+    if(adminKey && TABS.indexOf(t) !== -1 && t !== currentTab) switchTab(t);
+  });
 
+  // One listener for every action button. References come from data
+  // attributes, never from inline JavaScript.
+  $('appView').addEventListener('click', function(e){
+    var go = e.target.closest('[data-go]');
+    if(go){ switchTab(go.getAttribute('data-go')); return; }
+    var btn = e.target.closest('[data-act]');
+    if(!btn) return;
+    var ref = btn.getAttribute('data-ref'), act = btn.getAttribute('data-act');
+    if(act === 'copy'){ copyRef(ref); return; }
+    if(act === 'confirm' || act === 'cancel'){
+      var p = findIn(pending, ref);
+      if(!p){ toast('That booking has changed. Refreshing…', true); loadPending(); return; }
+      return act === 'confirm' ? confirmTransfer(p) : cancelTransfer(p);
+    }
+    var b = findIn(allBookings, ref) || findIn(todayList, ref);
+    if(!b){ toast('That booking has changed. Refreshing…', true); loadTab(currentTab); return; }
+    if(act === 'checkout') checkoutBooking(b);
+    if(act === 'delete') deleteBooking(b);
+  });
+
+  // Auto refresh: current tab plus the pending badge, once a minute while visible.
+  setInterval(function(){
+    if(!adminKey || $('appView').hidden || $('dlg').open || document.visibilityState !== 'visible') return;
+    if(currentTab === 'pending') loadPending(true);
+    else { loadPending(true); if(currentTab === 'today') loadToday(); }
+  }, REFRESH_MS);
+  setInterval(function(){ if(currentTab === 'pending' && pendingLoadedAt) renderPending(); }, 30000);
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible' && adminKey && !$('appView').hidden && (!pendingLoadedAt || Date.now() - pendingLoadedAt > 30000)){
+      loadPending(currentTab !== 'pending');
+    }
+  });
+
+  adminKey = readKey();
+  if(adminKey) openApp(); else signedOut('');
+})();
+</script>
 </body>
 </html>
