@@ -10,6 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<!-- Phone-number rules, used to work out the country of guest numbers saved without a country code. -->
+<script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.11.18/bundle/libphonenumber-min.js"></script>
 <style>
   :root{
     --maroon:#6E1F2E; --maroon-dark:#551622; --maroon-soft:rgba(110,31,46,.08);
@@ -344,13 +346,43 @@
     if(left <= SOON_MS) return { cls:'soon', label:'Expires in ' + duration(left), expired:false, soon:true };
     return { cls:'pending', label:'Expires in ' + duration(left), expired:false, soon:false };
   }
-  // Nigerian numbers: 0803... -> 234803... ; others kept as typed.
-  function waNumber(phone){
-    var d = String(phone || '').replace(/\D/g, '');
-    if(!d) return '';
-    if(d.indexOf('0') === 0 && d.length === 11) d = '234' + d.slice(1);
-    return d.length >= 10 ? d : '';
+  // Work out a guest number's country so Call / WhatsApp reach the right
+  // person. Numbers saved with + (or 00) are used as given. Numbers saved
+  // without a country code are tried as Nigerian first (the hotel's home
+  // country), then against other likely countries; the first valid match
+  // wins and is marked as detected, e.g. 6474103555 -> +1 647 410 3555 (Canada).
+  var GUESS_ORDER = ['NG','GH','US','CA','GB','ZA','KE','CM','BJ','TG','CI','SN','AE','IE','FR','DE','NL','BE','IT','ES','IN','CN'];
+  var regionNames = null;
+  try { regionNames = new Intl.DisplayNames(['en'], { type:'region' }); } catch(e){}
+  function countryName(c){ try { return (regionNames && regionNames.of(c)) || c; } catch(e){ return c; } }
+  var phoneCache = {};
+  function phoneInfo(raw){
+    raw = String(raw || '').trim();
+    if(!raw) return null;
+    if(phoneCache[raw]) return phoneCache[raw];
+    var info = null, L = window.libphonenumber, s = raw.replace(/^00/, '+');
+    if(L){
+      var p;
+      if(s.charAt(0) === '+'){
+        p = L.parsePhoneNumberFromString(s);
+        if(p) info = { e164:p.number, display:p.formatInternational(), country:p.country, valid:p.isValid(), detected:false };
+      } else {
+        for(var i = 0; i < GUESS_ORDER.length && !info; i++){
+          p = L.parsePhoneNumberFromString(s, GUESS_ORDER[i]);
+          if(p && p.isValid()) info = { e164:p.number, display:p.formatInternational(), country:p.country, valid:true, detected:GUESS_ORDER[i] !== 'NG' };
+        }
+      }
+    }
+    if(!info){
+      // Library unavailable or nothing matched: Nigerian local format only.
+      var d = s.replace(/\D/g, '');
+      if(s.charAt(0) !== '+' && d.indexOf('0') === 0 && d.length === 11) d = '234' + d.slice(1);
+      var ok = d.length >= 10;
+      info = { e164: ok ? '+' + d : null, display: raw, country: null, valid: ok, detected: false };
+    }
+    return (phoneCache[raw] = info);
   }
+  function waNumber(phone){ var i = phoneInfo(phone); return i && i.valid && i.e164 ? i.e164.replace(/\D/g, '') : ''; }
   function matches(b, q){
     return !q || [b.guestName, b.guestPhone, b.guestEmail, b.reference, b.roomType].join(' ').toLowerCase().indexOf(q) !== -1;
   }
@@ -382,7 +414,9 @@
   }
   function statusBadge(s){ return '<span class="badge ' + esc(s) + '">' + esc(String(s || '').replace('-', ' ')) + '</span>'; }
   function guestCell(b){
-    var c = [b.guestPhone, b.guestEmail].filter(Boolean).map(esc).join(' &middot; ');
+    var ph = phoneInfo(b.guestPhone);
+    var phone = ph ? '<a href="tel:' + esc(ph.e164 || String(b.guestPhone).replace(/[^\d+]/g, '')) + '" style="text-decoration:none" title="' + esc(ph.country ? countryName(ph.country) : '') + '">' + esc(ph.display) + '</a>' : '';
+    var c = [phone, b.guestEmail ? esc(b.guestEmail) : ''].filter(Boolean).join(' &middot; ');
     return (b.guestName ? '<div style="font-weight:600">' + esc(b.guestName) + '</div>' : '<div class="none">No name</div>') +
       (c ? '<div class="sub">' + c + '</div>' : '');
   }
@@ -512,8 +546,9 @@
 
   function pendingCard(b, now){
     var s = holdState(b, now), n = nightsOf(b), amt = expectedAmount(b), ref = esc(b.reference), links = [];
-    if(b.guestPhone){
-      links.push('<a class="chip" href="tel:' + esc(String(b.guestPhone).replace(/[^\d+]/g, '')) + '">&#9742; ' + esc(b.guestPhone) + '</a>');
+    var ph = phoneInfo(b.guestPhone);
+    if(ph){
+      links.push('<a class="chip" href="tel:' + esc(ph.e164 || String(b.guestPhone).replace(/[^\d+]/g, '')) + '" title="' + esc(ph.country ? countryName(ph.country) + (ph.detected ? ' (detected from the number)' : '') : 'Country unknown') + '">&#9742; ' + esc(ph.display) + '</a>');
       var wa = waNumber(b.guestPhone);
       if(wa){
         var msg = 'Hello' + (b.guestName ? ' ' + b.guestName : '') + ', this is LimeRidge Signature Hotel about your ' + (b.roomType || '') + ' booking (ref ' + (b.reference || '') + ').';
@@ -528,7 +563,9 @@
         '<div class="nights">' + n + ' night' + (n === 1 ? '' : 's') + ' &middot; 1 room</div></div>' +
       '<div class="guest"><div class="k">Guest</div>' +
         (b.guestName ? '<div class="name">' + esc(b.guestName) + '</div>' : '<div class="none">No name given</div>') +
-        (links.length ? '<div class="links">' + links.join('') + '</div>' : '') + '</div>' +
+        (links.length ? '<div class="links">' + links.join('') + '</div>' : '') +
+        (ph && ph.country ? '<div class="meta">' + esc(countryName(ph.country)) + (ph.detected ? ' &middot; detected from the number' : '') + '</div>' :
+          (ph && !ph.valid ? '<div class="meta">Country code unclear &middot; check with the guest</div>' : '')) + '</div>' +
       '<div><div class="k">Expected transfer</div>' +
         '<div class="amt">' + (amt ? naira(amt) : '&mdash;') + (amt && rate ? '<small>' + naira(rate) + ' &times; ' + n + '</small>' : '') + '</div>' +
         '<div class="meta">Ref <span class="ref">' + ref + '</span> <button class="chip" type="button" data-act="copy" data-ref="' + ref + '" title="Copy reference">Copy</button></div>' +

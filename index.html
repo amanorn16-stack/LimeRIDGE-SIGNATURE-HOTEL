@@ -1307,6 +1307,11 @@
   .row2{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
   .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; }
   @media(max-width:480px){ .row2, .row3{ grid-template-columns:1fr; } }
+  .phone-field{ display:grid; grid-template-columns:minmax(118px, 36%) 1fr; gap:9px; }
+  .modal .phone-field select{ padding-right:8px; text-overflow:ellipsis; cursor:pointer; }
+  .phone-hint{ font-size:12px; color:var(--muted); margin:-3px 2px 6px; min-height:0; }
+  .phone-hint.ok{ color:var(--green); }
+  .phone-hint.warn{ color:#9A6200; }
 
   .summary-row{
     display:flex;
@@ -2333,10 +2338,12 @@
       <div class="modal-section">
         <h4>Guest Details</h4>
         <input type="text" id="guestName" placeholder="Full Name">
-        <div class="row2">
-          <input type="email" id="guestEmail" placeholder="Email" required>
-          <input type="tel" id="guestPhone" placeholder="Phone">
+        <input type="email" id="guestEmail" placeholder="Email" autocomplete="email" required>
+        <div class="phone-field">
+          <select id="guestCountry" aria-label="Country code for phone number"></select>
+          <input type="tel" id="guestPhone" placeholder="Phone (WhatsApp)" autocomplete="tel-national" inputmode="tel">
         </div>
+        <div class="phone-hint" id="phoneHint" aria-live="polite"></div>
       </div>
 
       <div class="modal-section">
@@ -2903,6 +2910,7 @@
   }
 
   function openCheckout(roomName, rate){
+    if(window.loadPhoneLib) loadPhoneLib();
     document.getElementById('modalRoomName').textContent = roomName;
     document.getElementById('sumRoom').textContent = roomName;
     document.getElementById('sumRate').textContent = '₦' + rate.toLocaleString() + ' / night';
@@ -2980,7 +2988,7 @@
       metadata: {
         room: currentRoomName,
         guest_name: document.getElementById('guestName').value.trim(),
-        guest_phone: document.getElementById('guestPhone').value.trim(),
+        guest_phone: guestPhoneValue(),
         checkin: document.getElementById('checkin').value,
         checkout: document.getElementById('checkout').value
       },
@@ -3035,7 +3043,7 @@
       payment_options: 'card',
       customer: {
         email: email,
-        phone_number: document.getElementById('guestPhone').value.trim(),
+        phone_number: guestPhoneValue(),
         name: document.getElementById('guestName').value.trim() || 'Guest'
       },
       customizations: {
@@ -3101,7 +3109,7 @@
         source: 'bank_transfer',
         guestName: document.getElementById('guestName').value.trim(),
         guestEmail: document.getElementById('guestEmail').value.trim(),
-        guestPhone: document.getElementById('guestPhone').value.trim()
+        guestPhone: guestPhoneValue()
       })
     }).then(function(r){ return r.json(); })
       .then(function(result){
@@ -3338,6 +3346,135 @@
     var x0=null; box.addEventListener('touchstart',function(e){ x0=e.touches[0].clientX; },{passive:true});
     box.addEventListener('touchend',function(e){ if(x0===null) return; var dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) show(i+(dx<0?1:-1)); x0=null; });
   });
+})();
+</script>
+
+<script>
+/* Guest phone: country-code picker with auto-detection.
+   The country is pre-selected from the visitor's time zone (or browser
+   language), and the number is saved in full international format
+   (e.g. +16474103555) so staff can call or WhatsApp any guest, local or
+   foreign. Uses libphonenumber-js, loaded only when checkout opens. */
+(function(){
+  var LIB_URL = 'https://cdn.jsdelivr.net/npm/libphonenumber-js@1.11.18/bundle/libphonenumber-min.js';
+  // Shown first, and used as a fallback list if the library can't load.
+  var TOP = [['NG','234'],['GH','233'],['US','1'],['CA','1'],['GB','44'],['ZA','27'],['KE','254'],['AE','971'],['FR','33'],['DE','49']];
+  var TZ_COUNTRY = {
+    'Africa/Lagos':'NG','Africa/Accra':'GH','Africa/Lome':'TG','Africa/Porto-Novo':'BJ','Africa/Douala':'CM','Africa/Abidjan':'CI',
+    'Africa/Dakar':'SN','Africa/Johannesburg':'ZA','Africa/Nairobi':'KE','Africa/Cairo':'EG','Africa/Kampala':'UG','Africa/Kigali':'RW',
+    'Europe/London':'GB','Europe/Dublin':'IE','Europe/Paris':'FR','Europe/Berlin':'DE','Europe/Amsterdam':'NL','Europe/Brussels':'BE',
+    'Europe/Madrid':'ES','Europe/Rome':'IT','Europe/Zurich':'CH','Europe/Lisbon':'PT','Asia/Dubai':'AE','Asia/Qatar':'QA','Asia/Riyadh':'SA',
+    'Asia/Kolkata':'IN','Asia/Calcutta':'IN','Asia/Shanghai':'CN','Asia/Singapore':'SG','Australia/Sydney':'AU','Australia/Melbourne':'AU',
+    'America/Toronto':'CA','America/Vancouver':'CA','America/Edmonton':'CA','America/Winnipeg':'CA','America/Halifax':'CA','America/Montreal':'CA',
+    'America/Regina':'CA','America/St_Johns':'CA','America/New_York':'US','America/Chicago':'US','America/Denver':'US','America/Los_Angeles':'US',
+    'America/Phoenix':'US','America/Anchorage':'US','Pacific/Honolulu':'US','America/Sao_Paulo':'BR','America/Mexico_City':'MX'
+  };
+
+  var sel = document.getElementById('guestCountry');
+  var input = document.getElementById('guestPhone');
+  var hint = document.getElementById('phoneHint');
+  if(!sel || !input) return;
+
+  var names = null;
+  try { names = new Intl.DisplayNames(['en'], { type:'region' }); } catch(e){}
+  function countryName(c){ try { return (names && names.of(c)) || c; } catch(e){ return c; } }
+  function flag(c){ return String.fromCodePoint.apply(null, c.split('').map(function(ch){ return 0x1F1E6 + ch.charCodeAt(0) - 65; })); }
+  function lib(){ return window.libphonenumber || null; }
+
+  function detectCountry(){
+    try {
+      var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if(TZ_COUNTRY[tz]) return TZ_COUNTRY[tz];
+    } catch(e){}
+    var langs = navigator.languages || [navigator.language || ''];
+    for(var i = 0; i < langs.length; i++){
+      var m = /-([A-Z]{2})$/i.exec(langs[i] || '');
+      if(m) return m[1].toUpperCase();
+    }
+    return 'NG';
+  }
+
+  function fill(list){
+    var keep = sel.value || detectCountry();
+    var seen = {}, html = '';
+    function opt(c, code){
+      if(seen[c]) return; seen[c] = 1;
+      html += '<option value="' + c + '" data-code="' + code + '">' + flag(c) + ' +' + code + ' ' + countryName(c) + '</option>';
+    }
+    TOP.forEach(function(p){ opt(p[0], p[1]); });
+    html += '<option disabled>────────</option>';
+    list.slice().sort(function(a, b){ return countryName(a[0]).localeCompare(countryName(b[0])); }).forEach(function(p){ opt(p[0], p[1]); });
+    sel.innerHTML = html;
+    sel.value = seen[keep] ? keep : 'NG';
+  }
+  function callingCode(){ var o = sel.options[sel.selectedIndex]; return o ? o.getAttribute('data-code') : '234'; }
+
+  fill([]);
+
+  var loading = null;
+  window.loadPhoneLib = function(){
+    if(lib()) return Promise.resolve(lib());
+    if(loading) return loading;
+    loading = new Promise(function(resolve){
+      var s = document.createElement('script');
+      s.src = LIB_URL; s.async = true;
+      s.onload = function(){
+        var L = lib();
+        if(L){ fill(L.getCountries().map(function(c){ return [c, L.getCountryCallingCode(c)]; })); check(); }
+        resolve(L);
+      };
+      s.onerror = function(){ loading = null; resolve(null); };
+      document.head.appendChild(s);
+    });
+    return loading;
+  };
+
+  // Typed with + or 00 in front: switch the picker to that country.
+  function syncFromTyped(){
+    var L = lib(), raw = input.value.trim().replace(/^00/, '+');
+    if(!L || raw.charAt(0) !== '+') return;
+    var p = L.parsePhoneNumberFromString(raw);
+    if(p && p.country && sel.querySelector('option[value="' + p.country + '"]')) sel.value = p.country;
+  }
+
+  function check(){
+    var L = lib(), raw = input.value.trim();
+    hint.className = 'phone-hint'; hint.textContent = '';
+    if(!L || !raw) return;
+    var p = parse(L, raw);
+    if(p && p.isValid()){
+      hint.className = 'phone-hint ok';
+      hint.textContent = '✓ ' + p.formatInternational() + (p.country ? ' · ' + countryName(p.country) : '');
+    } else if(raw.replace(/\D/g, '').length >= 6){
+      hint.className = 'phone-hint warn';
+      hint.textContent = "This doesn't look like a " + countryName(sel.value) + ' number. Please check the country code.';
+    }
+  }
+  function parse(L, raw){
+    raw = raw.replace(/^00/, '+');
+    return raw.charAt(0) === '+' ? L.parsePhoneNumberFromString(raw) : L.parsePhoneNumberFromString(raw, sel.value);
+  }
+
+  // Value sent with the booking: international format when valid; otherwise
+  // what the guest typed, prefixed with the chosen calling code so staff can
+  // still tell which country it is.
+  window.guestPhoneValue = function(){
+    var raw = input.value.trim();
+    if(!raw) return '';
+    var L = lib();
+    if(L){
+      var p = parse(L, raw);
+      if(p && p.isValid()) return p.number;
+    }
+    var plus = raw.replace(/^00/, '+');
+    if(plus.charAt(0) === '+') return plus;
+    return '+' + callingCode() + ' ' + raw.replace(/^0+/, '');
+  };
+
+  input.addEventListener('focus', function(){ window.loadPhoneLib(); }, { once:true });
+  input.addEventListener('input', function(){ syncFromTyped(); if(hint.textContent) check(); });
+  input.addEventListener('blur', check);
+  sel.addEventListener('change', function(){ check(); });
 })();
 </script>
 </body>
